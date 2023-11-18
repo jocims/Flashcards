@@ -86,18 +86,18 @@ class SubjectViewModel(
                     isAddingSubject = false,
                     subjectName = ""
 //                    notes = ""
-                    ) }
+                ) }
             }
             is AppEvent.SetSubjectName -> {
                 _stateSubject.update { it.copy(
                     subjectName = event.subjectName
                 ) }
             }
-                AppEvent.ShowSubjectDialog -> {
-                    _stateSubject.update { it.copy(
-                        isAddingSubject = true
-                    ) }
-                }
+            AppEvent.ShowSubjectDialog -> {
+                _stateSubject.update { it.copy(
+                    isAddingSubject = true
+                ) }
+            }
             is AppEvent.SortSubjects -> {
                 _sortType.value = event.sortType
             }
@@ -115,17 +115,18 @@ class SubjectViewModel(
                     return
                 }
 
+                val flashcard = Flashcard(
+                    front = front,
+                    back = back,
+                    subjectId = stateSubject.value.subjects.firstOrNull()?.id ?: -1
+                )
                 viewModelScope.launch {
-                    daoFlashcard.upsertFlashcard(Flashcard(
-                        front = front,
-                        back = back,
-                        subjectId = stateSubject.value.subjects.firstOrNull()?.id ?: -1
-                    ))
+                    daoFlashcard.upsertFlashcard(flashcard)
                 }
                 _stateFlashcard.update { it.copy(
+                    isAddingFlashcard = false,
                     front = "",
-                    back = "",
-                    isAddingFlashcard = false
+                    back = ""
                 ) }
             }
             is AppEvent.SetFlashcard -> {

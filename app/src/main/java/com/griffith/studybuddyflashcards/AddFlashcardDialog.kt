@@ -16,41 +16,51 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun AddSubjectDialog(
-    state: SubjectState,
+fun AddFlashcardDialog(
+    state: FlashcardState,
     onEvent: (AppEvent) -> Unit,
     modifier: Modifier = Modifier
 ) {
-//    Log.d("AddFlashcardDialog", "Recomposing with state: $state")
+    // Add log statement to check if the composable is recomposed
+    Log.d("AddFlashcardDialog", "Recomposing with state: $state")
 
     AlertDialog(
         modifier = modifier,
         onDismissRequest = {
-            onEvent(AppEvent.HideSubjectDialog)
+            onEvent(AppEvent.HideFlashcardDialog)
         },
-        title = { Text(text = "Add Subject") },
+        title = { Text(text = "Add Flashcard") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                // Add log statement to check the state of the front text
+                Log.d("AddFlashcardDialog", "Front Text: ${state.front}")
+
                 TextField(
-                    value = state.subjectName,
+                    value = state.front,
                     onValueChange = {
-                        onEvent(AppEvent.SetSubjectName(it))
+                        Log.d("AddFlashcardDialog", "Back Text: $it")
+
+                        onEvent(AppEvent.SetFlashcard(it, state.back))
                     },
                     placeholder = {
-                        Text(text = "Subject name")
+                        Text(text = "Flashcard Front Text")
                     }
                 )
-//                TextField(
-//                    value = state.notes,
-//                    onValueChange = {
-//                        onEvent(AppEvent.SetNotes(it))
-//                    },
-//                    placeholder = {
-//                        androidx.compose.material.Text(text = "Notes")
-//                    }
-//                )
+
+                TextField(
+                    value = state.back,
+                    onValueChange = {
+                        Log.d("AddFlashcardDialog", "Back Text: $it")
+
+                        onEvent(AppEvent.SetFlashcard(state.front, it))
+                    },
+                    placeholder = {
+                        Text(text = "Flashcard Back Text")
+                    }
+                )
+
             }
         },
         buttons = {
@@ -60,7 +70,7 @@ fun AddSubjectDialog(
             ) {
                 Button(
                     onClick = {
-                        onEvent(AppEvent.SaveSubject)
+                        onEvent(AppEvent.SaveFlashcard)
                     }
                 ) {
                     Text(text = "Add")

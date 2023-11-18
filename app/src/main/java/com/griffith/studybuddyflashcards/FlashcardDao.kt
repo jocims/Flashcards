@@ -11,7 +11,6 @@ interface FlashcardDao {
     @Upsert
     suspend fun upsertFlashcard(flashcard: Flashcard)
 
-
     @Delete
     suspend fun deleteFlashcard(flashcard: Flashcard)
 
@@ -20,5 +19,4 @@ interface FlashcardDao {
 
     @Query("SELECT * FROM flashcard WHERE subjectId = :subjectId ORDER BY front")
     fun getFlashcardsOrderedByFront(subjectId: Int): Flow<List<Flashcard>>
-
 }

@@ -26,17 +26,23 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.flow.toList
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MainScreen(
     state: SubjectState,
     onEvent: (AppEvent) -> Unit,
+    viewModel: SubjectViewModel
 
 //    context: Context,
 
@@ -44,6 +50,11 @@ fun MainScreen(
 
     val context = LocalContext.current
 
+    // Collect the flashcards directly from the ViewModel
+    val flashcardsState by viewModel.stateFlashcard.collectAsState()
+    val flashcards = remember {
+        flashcardsState.flashcards
+    }
 
     Scaffold (
         floatingActionButton = {
@@ -94,15 +105,26 @@ fun MainScreen(
                 }
             }
             items(state.subjects) { subject ->
+                // Assuming daoFlashcard is declared in SubjectViewModel
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
-                            showToast(context, "Clicked on ${subject.id}")
+                            showToast(context, "Clicked on ${subject.subjectName}")
+
+
+
+                            val dataMap = mapOf(
+                                "subjectId" to subject.id,
+                                "subjectName" to subject.subjectName,
+                                "flashcards" to flashcards
+                            )
+
 
                             // Navigate to StudyScreen
                             val intent = Intent(context, StudyActivity::class.java)
-                            intent.putExtra("subjectId", subject.id)
+                            intent.putExtra("dataMap", HashMap(dataMap)) // Convert flashcards to an array
                             context.startActivity(intent)
                         },
 

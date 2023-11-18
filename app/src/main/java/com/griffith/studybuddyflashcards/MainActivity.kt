@@ -26,7 +26,6 @@ class MainActivity : ComponentActivity() {
         object : ViewModelProvider.Factory {
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
                 return SubjectViewModel(db.subjectDao, db.flashcardDao()) as T
-                // Provide both daoSubject and daoFlashcard to the SubjectViewModel constructor
             }
         }
     }
@@ -36,7 +35,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             StudyBuddyFlashcardsTheme {
                 val state by viewModel.stateSubject.collectAsState()
-                MainScreen(state = state, onEvent = viewModel::onEvent)
+                MainScreen(state = state, onEvent = viewModel::onEvent, viewModel = viewModel)
 
             }
         }

@@ -20,7 +20,4 @@ interface SubjectDao {
 
     @Query("SELECT * FROM subject ORDER BY subjectName")
     fun getSubjectsOrderedBySubjectName(): Flow<List<Subject>>
-
-//    @Query("SELECT * FROM subject ORDER BY notes")
-//    fun getSubjectsOrderedByNotes(): Flow<List<Subject>>
 }

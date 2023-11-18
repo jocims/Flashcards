@@ -9,18 +9,17 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
-import java.util.Date
 
 class SubjectViewModel(
-    private val daoSubject: SubjectDao
-//    private val daoFlashcard: FlashcardDao
+    private val daoSubject: SubjectDao,
+    private val daoFlashcard: FlashcardDao
 ): ViewModel() {
 
     private val _sortType = MutableStateFlow(SortType.DEFAULT)
     private val _subjects = _sortType
         .flatMapLatest { sortType ->
             when(sortType) {
-                SortType.SUBJECT_NAME -> daoSubject.getSubjectsOrderedBySubjectName()
+                SortType.NAME -> daoSubject.getSubjectsOrderedBySubjectName()
 //                SortType.NOTES -> daoSubject.getSubjectsOrderedByNotes()
                 SortType.DEFAULT -> daoSubject.getAllSubjects()
             }
@@ -34,7 +33,22 @@ class SubjectViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SubjectState())
 
-//    private val _stateFlashcard = MutableStateFlow(FlashcardState())
+    private val _flashcards = _sortType
+        .flatMapLatest { sortType ->
+            when(sortType) {
+                SortType.NAME -> daoFlashcard.getFlashcardsOrderedByFront(stateSubject.value.subjects.firstOrNull()?.id ?: -1)
+                SortType.DEFAULT -> daoFlashcard.getFlashcardsForSubject(stateSubject.value.subjects.firstOrNull()?.id ?: -1)
+            }
+        }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
+
+
+    private val _stateFlashcard = MutableStateFlow(FlashcardState())
+    val stateFlashcard = combine(_stateFlashcard, _sortType, _flashcards) { stateFlashcard, sortType, flashcards ->
+        stateFlashcard.copy(
+            flashcards = flashcards,
+            sortType = sortType
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FlashcardState())
 
 
     fun onEvent(event: AppEvent) {
@@ -88,10 +102,53 @@ class SubjectViewModel(
                 _sortType.value = event.sortType
             }
 
-//            is AppEvent.SetNotes -> {
-//                _stateSubject.update { it.copy(
-//                    notes = event.notes
-//                ) }
+            is AppEvent.DeleteFlashcard -> {
+                viewModelScope.launch {
+                    daoFlashcard.deleteFlashcard(event.flashcard)
+                }
+            }
+            AppEvent.SaveFlashcard -> {
+                val front = stateFlashcard.value.front
+                val back = stateFlashcard.value.back
+
+                if(front.isBlank() || back.isBlank()) {
+                    return
+                }
+
+                viewModelScope.launch {
+                    daoFlashcard.upsertFlashcard(Flashcard(
+                        front = front,
+                        back = back,
+                        subjectId = stateSubject.value.subjects.firstOrNull()?.id ?: -1
+                    ))
+                }
+                _stateFlashcard.update { it.copy(
+                    front = "",
+                    back = "",
+                    isAddingFlashcard = false
+                ) }
+            }
+            is AppEvent.SetFlashcard -> {
+                _stateFlashcard.update { it.copy(
+                    front = event.front,
+                    back = event.back
+                ) }
+            }
+            AppEvent.ShowFlashcardList -> TODO()
+            AppEvent.HideFlashcardDialog -> {
+                _stateFlashcard.update { it.copy(
+                    isAddingFlashcard = false
+                ) }
+            }
+            AppEvent.ShowFlashcardDialog -> {
+                _stateFlashcard.update { it.copy(
+                    isAddingFlashcard = true
+                ) }
+            }
+
+            is AppEvent.SortFlashcards -> {
+                _sortType.value = event.sortType
+            }
             is AppEvent.DeleteSubject -> TODO()
             AppEvent.HideSubjectDialog -> TODO()
             AppEvent.SaveSubject -> TODO()
@@ -99,7 +156,5 @@ class SubjectViewModel(
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
         }
-        }
     }
-
-//}
+}

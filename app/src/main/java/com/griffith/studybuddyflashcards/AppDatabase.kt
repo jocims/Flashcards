@@ -8,8 +8,11 @@ import androidx.room.TypeConverters
 import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 
-@Database(entities = [Subject::class], version = 1)
+@Database(entities = [Subject::class, Flashcard::class], version = 3)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract val subjectDao: SubjectDao
+
+    abstract fun flashcardDao(): FlashcardDao
+
 }

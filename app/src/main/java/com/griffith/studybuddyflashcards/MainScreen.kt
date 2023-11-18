@@ -1,5 +1,8 @@
 package com.griffith.studybuddyflashcards
 
+import android.content.Context
+import android.content.Intent
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +28,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -32,8 +36,15 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun MainScreen(
     state: SubjectState,
-    onEvent: (AppEvent) -> Unit
+    onEvent: (AppEvent) -> Unit,
+
+//    context: Context,
+
 ) {
+
+    val context = LocalContext.current
+
+
     Scaffold (
         floatingActionButton = {
             FloatingActionButton(onClick = {
@@ -84,10 +95,21 @@ fun MainScreen(
             }
             items(state.subjects) { subject ->
                 Row(
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable {
+                            showToast(context, "Clicked on ${subject.id}")
+
+                            // Navigate to StudyScreen
+                            val intent = Intent(context, StudyActivity::class.java)
+                            intent.putExtra("subjectId", subject.id)
+                            context.startActivity(intent)
+                        },
+
                 ) {
                     Column(
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier
+                            .weight(1f)
                     ) {
                         Text(
                             text = subject.subjectName,
@@ -107,3 +129,15 @@ fun MainScreen(
         }
     }
 }
+
+fun showToast(context: Context, message: String) {
+    Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+
+
+}
+//
+//fun launchStudyActivity(context: Context, id: Int) {
+//    val intent = Intent(context, StudyActivity::class.java)
+//    intent.putExtra("subjectId", id)
+//    context.startActivity(intent)
+//}

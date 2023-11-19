@@ -2,6 +2,7 @@ package com.griffith.studybuddyflashcards
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
@@ -38,7 +39,8 @@ class StudyActivity : ComponentActivity() {
 
         //val subjectId = intent.getIntExtra("subjectId", -1)
         val dataMap = intent.getSerializableExtra("dataMap") as? HashMap<String, Any>
-        val viewModel: SubjectViewModel = SubjectViewModel(daoSubject, daoFlashcard)
+        val viewModel = SubjectViewModel(daoSubject, daoFlashcard)
+
 
             setContent {
             StudyBuddyFlashcardsTheme {
@@ -64,7 +66,10 @@ fun StudyScreen(
 
     // Example of handling event and state
     var isAddingFlashcard by remember { mutableStateOf(false) }
-    var flashcardState by remember { mutableStateOf(FlashcardState()) }
+//    var flashcardState by remember { mutableStateOf(FlashcardState()) }
+
+    val flashcardState by viewModel.stateFlashcard.collectAsState()
+
 
     Scaffold(
         floatingActionButton = {
@@ -81,9 +86,14 @@ fun StudyScreen(
     ) { _ ->
         if (isAddingFlashcard) {
 //            AddFlashcardDialog(state = state, onEvent = onEvent)
-            AddFlashcardDialog(state = flashcardState, onEvent = viewModel::onEvent)
-            }
 
+            // Add log statements to check the values
+            Log.d("StudyScreen", "Adding Flashcard - subjectId: ${dataMap?.get("subjectId") as? Int ?: -1}")
+            Log.d("StudyScreen", "FlashcardState: $flashcardState")
+
+
+            AddFlashcardDialog(state = flashcardState, subjectId = dataMap?.get("subjectId") as? Int ?: -1, onEvent = viewModel::onEvent)
+            }
 
         Column {
             Text("Subject: ${dataMap?.get("subjectName")}")

@@ -51,10 +51,10 @@ fun MainScreen(
     val context = LocalContext.current
 
     // Collect the flashcards directly from the ViewModel
-    val flashcardsState by viewModel.stateFlashcard.collectAsState()
-    val flashcards = remember {
-        flashcardsState.flashcards
-    }
+//    val flashcardsState by viewModel.stateFlashcard.collectAsState()
+//    val flashcards = remember {
+//        flashcardsState.flashcards
+//    }
 
     Scaffold (
         floatingActionButton = {
@@ -118,7 +118,7 @@ fun MainScreen(
                             val dataMap = mapOf(
                                 "subjectId" to subject.id,
                                 "subjectName" to subject.subjectName,
-                                "flashcards" to flashcards
+//                                "flashcards" to flashcards
                             )
 
 

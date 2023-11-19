@@ -1,5 +1,6 @@
 package com.griffith.studybuddyflashcards
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -107,7 +108,7 @@ class SubjectViewModel(
                     daoFlashcard.deleteFlashcard(event.flashcard)
                 }
             }
-            AppEvent.SaveFlashcard -> {
+            is AppEvent.SaveFlashcard -> {
                 val front = stateFlashcard.value.front
                 val back = stateFlashcard.value.back
 
@@ -118,25 +119,32 @@ class SubjectViewModel(
                 val flashcard = Flashcard(
                     front = front,
                     back = back,
-                    subjectId = stateSubject.value.subjects.firstOrNull()?.id ?: -1
+                    subjectId = event.subjectId
                 )
+
                 viewModelScope.launch {
                     daoFlashcard.upsertFlashcard(flashcard)
                 }
+
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false,
                     front = "",
                     back = ""
                 ) }
             }
-            is AppEvent.SetFlashcard -> {
+            is AppEvent.SetFlashcardBack -> {
                 _stateFlashcard.update { it.copy(
-                    front = event.front,
                     back = event.back
+                ) }
+            }
+            is AppEvent.SetFlashcardFront -> {
+                _stateFlashcard.update { it.copy(
+                    front = event.front
                 ) }
             }
             AppEvent.ShowFlashcardList -> TODO()
             AppEvent.HideFlashcardDialog -> {
+                Log.d("ViewModel", "HideFlashcardDialog event received")
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false
                 ) }
@@ -151,9 +159,7 @@ class SubjectViewModel(
                 _sortType.value = event.sortType
             }
             is AppEvent.DeleteSubject -> TODO()
-            AppEvent.HideSubjectDialog -> TODO()
             AppEvent.SaveSubject -> TODO()
-            is AppEvent.SetSubjectName -> TODO()
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
         }

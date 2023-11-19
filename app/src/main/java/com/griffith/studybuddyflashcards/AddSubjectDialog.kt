@@ -36,6 +36,8 @@ fun AddSubjectDialog(
                 TextField(
                     value = state.subjectName,
                     onValueChange = {
+                        // Add log statement to check the changes in the front text
+                        Log.d("AddFlashcardDialog", "Subject: $it")
                         onEvent(AppEvent.SetSubjectName(it))
                     },
                     placeholder = {

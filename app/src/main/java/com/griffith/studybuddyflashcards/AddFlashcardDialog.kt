@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 fun AddFlashcardDialog(
     state: FlashcardState,
     onEvent: (AppEvent) -> Unit,
+    subjectId: Int,
     modifier: Modifier = Modifier
 ) {
     // Add log statement to check if the composable is recomposed
@@ -34,15 +35,18 @@ fun AddFlashcardDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Add log statement to check the state of the front text
-                Log.d("AddFlashcardDialog", "Front Text: ${state.front}")
+
+                // Add log statements to check the values
+                Log.d("AddFlashcardDialog", "Recomposing with state: $state")
+                Log.d("AddFlashcardDialog", "SubjectId: $subjectId")
 
                 TextField(
                     value = state.front,
                     onValueChange = {
-                        Log.d("AddFlashcardDialog", "Back Text: $it")
+                        // Add log statement to check the changes in the front text
+                        Log.d("AddFlashcardDialog", "Front Text: $it")
 
-                        onEvent(AppEvent.SetFlashcard(it, state.back))
+                        onEvent(AppEvent.SetFlashcardFront(it))
                     },
                     placeholder = {
                         Text(text = "Flashcard Front Text")
@@ -52,9 +56,10 @@ fun AddFlashcardDialog(
                 TextField(
                     value = state.back,
                     onValueChange = {
+                        // Add log statement to check the changes in the back text
                         Log.d("AddFlashcardDialog", "Back Text: $it")
 
-                        onEvent(AppEvent.SetFlashcard(state.front, it))
+                        onEvent(AppEvent.SetFlashcardBack(it))
                     },
                     placeholder = {
                         Text(text = "Flashcard Back Text")
@@ -70,7 +75,9 @@ fun AddFlashcardDialog(
             ) {
                 Button(
                     onClick = {
-                        onEvent(AppEvent.SaveFlashcard)
+                        Log.d("AddFlashcardDialog", "Button clicked")
+
+                        onEvent(AppEvent.SaveFlashcard(subjectId = subjectId))
                     }
                 ) {
                     Text(text = "Add")

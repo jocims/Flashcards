@@ -35,7 +35,6 @@ fun AddFlashcardDialog(
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
                 // Add log statements to check the values
                 Log.d("AddFlashcardDialog", "Recomposing with state: $state")
                 Log.d("AddFlashcardDialog", "SubjectId: $subjectId")
@@ -45,7 +44,6 @@ fun AddFlashcardDialog(
                     onValueChange = {
                         // Add log statement to check the changes in the front text
                         Log.d("AddFlashcardDialog", "Front Text: $it")
-
                         onEvent(AppEvent.SetFlashcardFront(it))
                     },
                     placeholder = {
@@ -58,14 +56,12 @@ fun AddFlashcardDialog(
                     onValueChange = {
                         // Add log statement to check the changes in the back text
                         Log.d("AddFlashcardDialog", "Back Text: $it")
-
                         onEvent(AppEvent.SetFlashcardBack(it))
                     },
                     placeholder = {
                         Text(text = "Flashcard Back Text")
                     }
                 )
-
             }
         },
         buttons = {
@@ -77,7 +73,11 @@ fun AddFlashcardDialog(
                     onClick = {
                         Log.d("AddFlashcardDialog", "Button clicked")
 
+                        // Save the flashcard
                         onEvent(AppEvent.SaveFlashcard(subjectId = subjectId))
+
+                        // Hide the dialog
+                        onEvent(AppEvent.HideFlashcardDialog)
                     }
                 ) {
                     Text(text = "Add")
@@ -86,3 +86,4 @@ fun AddFlashcardDialog(
         }
     )
 }
+

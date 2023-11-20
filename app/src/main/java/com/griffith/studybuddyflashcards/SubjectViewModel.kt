@@ -51,6 +51,10 @@ class SubjectViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FlashcardState())
 
+    fun getSubjectDetails(subjectId: Int): Subject? {
+        // You may need to modify the logic based on your database structure
+        return stateSubject.value.subjects.find { it.id == subjectId }
+    }
 
     fun onEvent(event: AppEvent) {
         when (event) {

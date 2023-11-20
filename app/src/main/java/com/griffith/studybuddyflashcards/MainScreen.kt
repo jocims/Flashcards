@@ -36,13 +36,15 @@ import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.toList
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 
 @Composable
 fun MainScreen(
     state: SubjectState,
     onEvent: (AppEvent) -> Unit,
-    viewModel: SubjectViewModel
+    viewModel: SubjectViewModel,
+    navController: NavController  // Add this parameter
 
 //    context: Context,
 
@@ -105,27 +107,19 @@ fun MainScreen(
                 }
             }
             items(state.subjects) { subject ->
-                // Assuming daoFlashcard is declared in SubjectViewModel
-
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable {
                             showToast(context, "Clicked on ${subject.subjectName}")
 
-
-
                             val dataMap = mapOf(
                                 "subjectId" to subject.id,
                                 "subjectName" to subject.subjectName,
-//                                "flashcards" to flashcards
                             )
 
-
                             // Navigate to StudyScreen
-                            val intent = Intent(context, StudyActivity::class.java)
-                            intent.putExtra("dataMap", HashMap(dataMap)) // Convert flashcards to an array
-                            context.startActivity(intent)
+                            navController.navigate("study_screen/${subject.id}")
                         },
 
                 ) {

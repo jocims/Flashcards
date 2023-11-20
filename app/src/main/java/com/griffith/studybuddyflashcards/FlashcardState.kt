@@ -5,5 +5,7 @@ data class FlashcardState(
     val front: String = "",
     val back: String = "",
     val isAddingFlashcard: Boolean = false,
-    val sortType: SortType = SortType.NAME
+    val sortType: SortType = SortType.NAME,
+    val currentFlashcardIndex: Int = 0,
+    val subjectId: Int = -1
 )

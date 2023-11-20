@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -44,16 +46,28 @@ class SubjectViewModel(
 
 
     private val _stateFlashcard = MutableStateFlow(FlashcardState())
-    val stateFlashcard = combine(_stateFlashcard, _sortType, _flashcards) { stateFlashcard, sortType, flashcards ->
+    val stateFlashcard: StateFlow<FlashcardState> = combine(_stateFlashcard, _flashcards) { stateFlashcard, flashcards ->
         stateFlashcard.copy(
-            flashcards = flashcards,
-            sortType = sortType
+            flashcards = flashcards
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FlashcardState())
+
+
 
     fun getSubjectDetails(subjectId: Int): Subject? {
         // You may need to modify the logic based on your database structure
         return stateSubject.value.subjects.find { it.id == subjectId }
+    }
+
+    fun getFlashcardsBySubjectId(subjectId: Int): List<Flashcard> {
+        // Retrieve flashcards by subjectId from your data source
+
+        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
+        return stateFlashcard.value.flashcards.filter { it.subjectId == subjectId }
+    }
+
+    fun updateFlashcardState(newSubjectId: Int) {
+        _stateFlashcard.value = _stateFlashcard.value.copy(subjectId = newSubjectId)
     }
 
     fun onEvent(event: AppEvent) {
@@ -133,7 +147,8 @@ class SubjectViewModel(
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false,
                     front = "",
-                    back = ""
+                    back = "",
+                    subjectId = -1
                 ) }
             }
             is AppEvent.SetFlashcardBack -> {
@@ -146,7 +161,11 @@ class SubjectViewModel(
                     front = event.front
                 ) }
             }
-            AppEvent.ShowFlashcardList -> TODO()
+            AppEvent.ShowFlashcardList -> {
+                _stateFlashcard.update { it.copy(
+                    isAddingFlashcard = false
+                ) }
+            }
             AppEvent.HideFlashcardDialog -> {
                 Log.d("ViewModel", "HideFlashcardDialog event received")
                 _stateFlashcard.update { it.copy(
@@ -166,6 +185,16 @@ class SubjectViewModel(
             AppEvent.SaveSubject -> TODO()
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
+            AppEvent.NavigateToNextFlashcard -> {
+                _stateFlashcard.update { it.copy(
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % stateFlashcard.value.flashcards.size
+                ) }
+            }
+            AppEvent.NavigateToPreviousFlashcard -> {
+                _stateFlashcard.update { it.copy(
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
+                ) }
+            }
         }
     }
 }

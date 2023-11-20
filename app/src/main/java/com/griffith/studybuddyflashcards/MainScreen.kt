@@ -113,10 +113,10 @@ fun MainScreen(
                         .clickable {
                             showToast(context, "Clicked on ${subject.subjectName}")
 
-                            val dataMap = mapOf(
-                                "subjectId" to subject.id,
-                                "subjectName" to subject.subjectName,
-                            )
+//                            val dataMap = mapOf(
+//                                "subjectId" to subject.id,
+//                                "subjectName" to subject.subjectName,
+//                            )
 
                             // Navigate to StudyScreen
                             navController.navigate("study_screen/${subject.id}")

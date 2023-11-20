@@ -53,9 +53,9 @@ class MainActivity : ComponentActivity() {
                     composable("study_screen/{subjectId}") { backStackEntry ->
                         // Retrieve subjectId from the route
                         val subjectId = backStackEntry.arguments?.getString("subjectId")?.toIntOrNull()
+                        val flashcards = viewModel.stateFlashcard.collectAsState().value.flashcards
                         if (subjectId != null) {
                             StudyScreen(
-                                state = viewModel.stateFlashcard.collectAsState().value,  // Pass the correct FlashcardState
                                 subjectId = subjectId,
                                 viewModel = viewModel,
                                 navController = navController,

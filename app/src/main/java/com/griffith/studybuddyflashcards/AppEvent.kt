@@ -17,4 +17,8 @@ sealed interface AppEvent {
     object ShowFlashcardList : AppEvent
     data class SortFlashcards(val sortType: SortType) : AppEvent
     data class DeleteFlashcard(val flashcard: Flashcard) : AppEvent
+
+    object NavigateToPreviousFlashcard : AppEvent
+
+    object NavigateToNextFlashcard : AppEvent
 }

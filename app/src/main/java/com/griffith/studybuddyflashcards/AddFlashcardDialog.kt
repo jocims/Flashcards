@@ -25,6 +25,7 @@ fun AddFlashcardDialog(
     // Add log statement to check if the composable is recomposed
     Log.d("AddFlashcardDialog", "Recomposing with state: $state")
 
+
     AlertDialog(
         modifier = modifier,
         onDismissRequest = {

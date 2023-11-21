@@ -66,11 +66,14 @@ fun StudyScreen(
 
     // Call updateFlashcardState when StudyScreen is created
     LaunchedEffect(Unit) {
+        Log.d("StudyScreen", "LaunchedEffect triggered")
         viewModel.updateFlashcardState(subjectId)
     }
 
+
+
     val state by viewModel.stateFlashcard.collectAsState()
-   val subjectDetails = viewModel.getSubjectDetails(subjectId)
+    val subjectDetails = viewModel.getSubjectDetails(subjectId)
 
 //    val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
 

@@ -55,7 +55,7 @@ class SubjectViewModel(
 
     fun getFlashcardsBySubjectId(subjectId: Int): List<Flashcard> {
         // Retrieve flashcards by subjectId from your data source
-        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
+//        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
 
         // If the subjectId is -1 or not found, return an empty list
         if (subjectId == -1) {
@@ -71,7 +71,11 @@ class SubjectViewModel(
     }
 
     fun updateFlashcardState(newSubjectId: Int) {
-        _stateFlashcard.value = _stateFlashcard.value.copy(subjectId = newSubjectId)
+        Log.d("updateFlashcardState", "Updating flashcard index: $newSubjectId with index: ${stateFlashcard.value.currentFlashcardIndex}")
+        _stateFlashcard.value = _stateFlashcard.value.copy(
+            subjectId = newSubjectId,
+            currentFlashcardIndex = 0
+        )
     }
 
     fun onEvent(event: AppEvent) {
@@ -171,7 +175,7 @@ class SubjectViewModel(
                 ) }
             }
             AppEvent.HideFlashcardDialog -> {
-                Log.d("ViewModel", "HideFlashcardDialog event received")
+//                Log.d("ViewModel", "HideFlashcardDialog event received")
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false
                 ) }
@@ -190,36 +194,15 @@ class SubjectViewModel(
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
 
-//            AppEvent.NavigateToNextFlashcard -> {
-//                _stateFlashcard.update {
-//                    it.copy(
-//                        currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
-//                    )
-//                }
-//            }
-//            AppEvent.NavigateToPreviousFlashcard -> {
-//                _stateFlashcard.update { it.copy(
-//                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + getFlashcardsBySubjectId(subjectId = it.subjectId).size) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
-//                ) }
-//            }
-
             AppEvent.NavigateToNextFlashcard -> {
-                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
-                if (flashcards.isNotEmpty()) {
-                    _stateFlashcard.update { state ->
-                        val currentFlashcardIndex = (state.currentFlashcardIndex + 1) % flashcards.size
-                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
-                    }
-                }
+                _stateFlashcard.update { it.copy(
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % stateFlashcard.value.flashcards.size
+                ) }
             }
             AppEvent.NavigateToPreviousFlashcard -> {
-                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
-                if (flashcards.isNotEmpty()) {
-                    _stateFlashcard.update { state ->
-                        val currentFlashcardIndex = (state.currentFlashcardIndex - 1 + flashcards.size) % flashcards.size
-                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
-                    }
-                }
+                _stateFlashcard.update { it.copy(
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
+                ) }
             }
         }
     }

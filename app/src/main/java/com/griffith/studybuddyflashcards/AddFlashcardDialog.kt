@@ -77,6 +77,8 @@ fun AddFlashcardDialog(
                         // Save the flashcard
                         onEvent(AppEvent.SaveFlashcard(subjectId = subjectId))
 
+
+
                         // Hide the dialog
                         onEvent(AppEvent.HideFlashcardDialog)
                     }

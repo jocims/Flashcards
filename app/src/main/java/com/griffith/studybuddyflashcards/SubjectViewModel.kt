@@ -39,31 +39,35 @@ class SubjectViewModel(
     private val _flashcards = _sortType
         .flatMapLatest { sortType ->
             when(sortType) {
-                SortType.NAME -> daoFlashcard.getFlashcardsOrderedByFront(stateSubject.value.subjects.firstOrNull()?.id ?: -1)
-                SortType.DEFAULT -> daoFlashcard.getFlashcardsForSubject(stateSubject.value.subjects.firstOrNull()?.id ?: -1)
+                SortType.NAME -> daoFlashcard.getFlashcardsOrderedByFront(stateFlashcard.value.subjectId)
+                SortType.DEFAULT -> daoFlashcard.getAllFlashcards()
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
 
     private val _stateFlashcard = MutableStateFlow(FlashcardState())
-    val stateFlashcard: StateFlow<FlashcardState> = combine(_stateFlashcard, _flashcards) { stateFlashcard, flashcards ->
+    val stateFlashcard: StateFlow<FlashcardState> = combine(_stateFlashcard, _sortType, _flashcards) { stateFlashcard, sortType,  flashcards ->
         stateFlashcard.copy(
-            flashcards = flashcards
+            flashcards = flashcards,
+            sortType = sortType
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FlashcardState())
 
+    fun getFlashcardsBySubjectId(subjectId: Int): List<Flashcard> {
+        // Retrieve flashcards by subjectId from your data source
+        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
 
+        // If the subjectId is -1 or not found, return an empty list
+        if (subjectId == -1) {
+            return emptyList()
+        }
+
+        return stateFlashcard.value.flashcards.filter { it.subjectId == subjectId }
+    }
 
     fun getSubjectDetails(subjectId: Int): Subject? {
         // You may need to modify the logic based on your database structure
         return stateSubject.value.subjects.find { it.id == subjectId }
-    }
-
-    fun getFlashcardsBySubjectId(subjectId: Int): List<Flashcard> {
-        // Retrieve flashcards by subjectId from your data source
-
-        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
-        return stateFlashcard.value.flashcards.filter { it.subjectId == subjectId }
     }
 
     fun updateFlashcardState(newSubjectId: Int) {
@@ -185,15 +189,37 @@ class SubjectViewModel(
             AppEvent.SaveSubject -> TODO()
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
+
+//            AppEvent.NavigateToNextFlashcard -> {
+//                _stateFlashcard.update {
+//                    it.copy(
+//                        currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
+//                    )
+//                }
+//            }
+//            AppEvent.NavigateToPreviousFlashcard -> {
+//                _stateFlashcard.update { it.copy(
+//                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + getFlashcardsBySubjectId(subjectId = it.subjectId).size) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
+//                ) }
+//            }
+
             AppEvent.NavigateToNextFlashcard -> {
-                _stateFlashcard.update { it.copy(
-                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % stateFlashcard.value.flashcards.size
-                ) }
+                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
+                if (flashcards.isNotEmpty()) {
+                    _stateFlashcard.update { state ->
+                        val currentFlashcardIndex = (state.currentFlashcardIndex + 1) % flashcards.size
+                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
+                    }
+                }
             }
             AppEvent.NavigateToPreviousFlashcard -> {
-                _stateFlashcard.update { it.copy(
-                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
-                ) }
+                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
+                if (flashcards.isNotEmpty()) {
+                    _stateFlashcard.update { state ->
+                        val currentFlashcardIndex = (state.currentFlashcardIndex - 1 + flashcards.size) % flashcards.size
+                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
+                    }
+                }
             }
         }
     }

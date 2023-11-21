@@ -72,9 +72,12 @@ fun StudyScreen(
     val state by viewModel.stateFlashcard.collectAsState()
    val subjectDetails = viewModel.getSubjectDetails(subjectId)
 
-    val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
+//    val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
 
-//    Log.d("StudyScreen", "Number of flashcards: ${flashcards.size}")
+    //Only consider flashcards with the correct subjectId
+     val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
+
+    Log.d("StudyScreen", "Number of flashcards: ${flashcardList.size}")
 
 
     Scaffold(
@@ -139,9 +142,13 @@ fun StudyScreen(
             ) {
 
                 if (state.flashcards.isNotEmpty()) {
+
+                    val currentFlashcardIndex = state.currentFlashcardIndex % state.flashcards.size
+
                     Flashcard(
                         flashcards = flashcardList,
-                        currentFlashcardIndex = state.currentFlashcardIndex,
+                        subjectId = subjectId,
+                        currentFlashcardIndex = currentFlashcardIndex,
                         state = state,
                         onNavigateToPrevious = { onEvent(AppEvent.NavigateToPreviousFlashcard) },
                         onNavigateToNext = { onEvent(AppEvent.NavigateToNextFlashcard) },
@@ -158,6 +165,7 @@ fun StudyScreen(
 @Composable
 fun Flashcard(
     flashcards: List<Flashcard>,
+    subjectId: Int,
     currentFlashcardIndex: Int,
     state: FlashcardState,
     onNavigateToPrevious: () -> Unit,
@@ -166,59 +174,63 @@ fun Flashcard(
 ) {
     var isFrontVisible by remember { mutableStateOf(true) }
 
-    Card(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(IntrinsicSize.Max)
-            .padding(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = Color.DarkGray,
-            contentColor = Color.White
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .clickable { isFrontVisible = !isFrontVisible },
-            verticalArrangement = Arrangement.Center
+    Column {
+
+        Card(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(IntrinsicSize.Max)
+                .padding(16.dp),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.DarkGray,
+                contentColor = Color.White
+            ),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
         ) {
-            Row(
+            Column(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                    .fillMaxSize()
+                    .clickable { isFrontVisible = !isFrontVisible },
+                verticalArrangement = Arrangement.Center
             ) {
-                val flashcard = flashcards.getOrNull(currentFlashcardIndex)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    val flashcard = flashcards.getOrNull(currentFlashcardIndex)
 
-                if (flashcard != null) {
-                    IconButton(onClick = onNavigateToPrevious) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Navigate to Previous Flashcard"
+                    if (flashcard != null) {
+                        IconButton(onClick = onNavigateToPrevious) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowBack,
+                                contentDescription = "Navigate to Previous Flashcard"
+                            )
+                        }
+
+                        Text(
+                            text = if (isFrontVisible) flashcard.front else flashcard.back,
+                            fontSize = 20.sp,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier
+                                .weight(1f)
+                                .padding(16.dp)
                         )
-                    }
 
-                    Text(
-                        text = if (isFrontVisible) flashcard.front else flashcard.back,
-                        fontSize = 20.sp,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(16.dp)
-                    )
-
-                    IconButton(onClick = onNavigateToNext) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowForward,
-                            contentDescription = "Navigate to Next Flashcard"
-                        )
+                        IconButton(onClick = onNavigateToNext) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowForward,
+                                contentDescription = "Navigate to Next Flashcard"
+                            )
+                        }
+                    } else {
+                        Text("No flashcard found for subjectId $subjectId and index ${state.currentFlashcardIndex}")
                     }
-                } else {
-                    Text("No flashcard found for subjectId and index ${state.currentFlashcardIndex}")
                 }
             }
         }
+        Text("SubjectId $subjectId and index ${state.currentFlashcardIndex}")
     }
 }

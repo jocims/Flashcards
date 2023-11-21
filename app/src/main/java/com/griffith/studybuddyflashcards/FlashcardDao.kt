@@ -14,6 +14,9 @@ interface FlashcardDao {
     @Delete
     suspend fun deleteFlashcard(flashcard: Flashcard)
 
+    @Query("SELECT * FROM flashcard")
+    fun getAllFlashcards(): Flow<List<Flashcard>>
+
     @Query("SELECT * FROM flashcard WHERE subjectId = :subjectId")
     fun getFlashcardsForSubject(subjectId: Int): Flow<List<Flashcard>>
 

@@ -47,13 +47,16 @@ class MainActivity : ComponentActivity() {
                     // Define the screens
                     composable("main_screen") {
                         val state by viewModel.stateSubject.collectAsState()
-                        MainScreen(state = state, onEvent = viewModel::onEvent, viewModel = viewModel, navController = navController)
+                        MainScreen(
+                            state = state,
+                            onEvent = viewModel::onEvent,
+                            viewModel = viewModel,
+                            navController = navController)
                     }
 
                     composable("study_screen/{subjectId}") { backStackEntry ->
                         // Retrieve subjectId from the route
                         val subjectId = backStackEntry.arguments?.getString("subjectId")?.toIntOrNull()
-                        val flashcards = viewModel.stateFlashcard.collectAsState().value.flashcards
                         if (subjectId != null) {
                             StudyScreen(
                                 subjectId = subjectId,

@@ -118,6 +118,9 @@ fun MainScreen(
 //                                "subjectName" to subject.subjectName,
 //                            )
 
+                            //Set the currentFlashcardIndex to 0
+                            viewModel.updateFlashcardState(subject.id)
+
                             // Navigate to StudyScreen
                             navController.navigate("study_screen/${subject.id}")
                         },

@@ -1,5 +1,6 @@
 package com.griffith.studybuddyflashcards
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -53,6 +56,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.griffith.studybuddyflashcards.SubjectViewModel
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -63,26 +67,21 @@ fun StudyScreen(
     navController: NavController,
     onEvent: (AppEvent) -> Unit
 ) {
-
     // Call updateFlashcardState when StudyScreen is created
     LaunchedEffect(Unit) {
-        Log.d("StudyScreen", "LaunchedEffect triggered")
         viewModel.updateFlashcardState(subjectId)
         viewModel.getFlashcardsBySubjectId(subjectId)
     }
 
-
-
     val state by viewModel.stateFlashcard.collectAsState()
     val subjectDetails = viewModel.getSubjectDetails(subjectId)
 
-//    val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
-
-    //Only consider flashcards with the correct subjectId
-     val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
+    // Fetch the flashcards whenever the state changes
+    val flashcardList = remember(subjectId, state.flashcards) {
+        viewModel.getFlashcardsBySubjectId(subjectId)
+    }
 
     Log.d("StudyScreen", "Number of flashcards: ${flashcardList.size}")
-
 
     Scaffold(
         topBar = {
@@ -115,7 +114,6 @@ fun StudyScreen(
         },
         modifier = Modifier.padding(bottom = 16.dp)
     ) { _ ->
-
         if (state.isAddingFlashcard) {
             // Pass subjectId to AddFlashcardDialog
             AddFlashcardDialog(subjectId = subjectId ?: -1, state = state, onEvent = viewModel::onEvent)
@@ -125,14 +123,10 @@ fun StudyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 100.dp)
-                .navigationBarsPadding(),  // Use this line instead
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Display subject details
-//            Text(
-//                "Subject ID: $subjectId",
-//                fontSize = 20.sp)
             Text(
                 "Subject Name: ${subjectDetails?.subjectName ?: "Unknown"}",
                 fontSize = 20.sp
@@ -144,10 +138,9 @@ fun StudyScreen(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
                 if (state.flashcards.isNotEmpty()) {
-
                     val currentFlashcardIndex = state.currentFlashcardIndex
+                    val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
 
                     Flashcard(
                         flashcards = flashcardList,
@@ -156,6 +149,12 @@ fun StudyScreen(
                         state = state,
                         onNavigateToPrevious = { onEvent(AppEvent.NavigateToPreviousFlashcard) },
                         onNavigateToNext = { onEvent(AppEvent.NavigateToNextFlashcard) },
+                        audioFilePath = audioFile,
+                        onPlayAudio = { file ->
+                            val playAudioEvent = AppEvent.PlayAudio(file = file)
+                            viewModel.onEvent(playAudioEvent)
+                        },
+                        onStopAudio = { viewModel.onEvent(AppEvent.StopAudio) },
                         modifier = Modifier.fillMaxWidth().padding(16.dp)
                     )
                 } else {
@@ -166,6 +165,7 @@ fun StudyScreen(
     }
 }
 
+
 @Composable
 fun Flashcard(
     flashcards: List<Flashcard>,
@@ -174,6 +174,9 @@ fun Flashcard(
     state: FlashcardState,
     onNavigateToPrevious: () -> Unit,
     onNavigateToNext: () -> Unit,
+    audioFilePath: String?,
+    onPlayAudio: (File) -> Unit,
+    onStopAudio: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isFrontVisible by remember { mutableStateOf(true) }
@@ -207,7 +210,10 @@ fun Flashcard(
                     val flashcard = flashcards.getOrNull(currentFlashcardIndex)
 
                     if (flashcard != null) {
-                        IconButton(onClick = onNavigateToPrevious) {
+                        IconButton(onClick = {
+                            Log.d("Flashcardss", "Navigate to Previous Flashcard clicked")
+                            onNavigateToPrevious()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "Navigate to Previous Flashcard"
@@ -223,7 +229,10 @@ fun Flashcard(
                                 .padding(16.dp)
                         )
 
-                        IconButton(onClick = onNavigateToNext) {
+                        IconButton(onClick = {
+                            Log.d("Flashcardss", "Navigate to Next Flashcard clicked")
+                            onNavigateToNext()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
                                 contentDescription = "Navigate to Next Flashcard"
@@ -231,6 +240,35 @@ fun Flashcard(
                         }
                     } else {
                         Text("No flashcard found for subjectId $subjectId and index ${state.currentFlashcardIndex}")
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Max)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isFrontVisible && audioFilePath != null) {
+                        // Button for playing/stopping audio
+                        Button(
+                            onClick = {
+                                if (state.isPlayingAudio) {
+                                    // Stop playing
+                                    onStopAudio()
+                                } else {
+                                    Log.d(
+                                        "PlayAudio",
+                                        "Play audio clicked. File path: $audioFilePath"
+                                    )
+                                    // Play audio
+                                    onPlayAudio(File(audioFilePath ?: ""))
+                                }
+                            },
+                        ) {
+                            Text(text = if (state.isPlayingAudio) "Stop Playing" else "Play Audio")
+                        }
                     }
                 }
             }

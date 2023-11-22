@@ -67,25 +67,20 @@ fun StudyScreen(
     navController: NavController,
     onEvent: (AppEvent) -> Unit
 ) {
-
     // Call updateFlashcardState when StudyScreen is created
     LaunchedEffect(Unit) {
-        Log.d("StudyScreen", "LaunchedEffect triggered")
         viewModel.updateFlashcardState(subjectId)
     }
-
-
 
     val state by viewModel.stateFlashcard.collectAsState()
     val subjectDetails = viewModel.getSubjectDetails(subjectId)
 
-//    val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
-
-    //Only consider flashcards with the correct subjectId
-     val flashcardList = viewModel.getFlashcardsBySubjectId(subjectId)
+    // Fetch the flashcards whenever the state changes
+    val flashcardList = remember(subjectId, state.flashcards) {
+        viewModel.getFlashcardsBySubjectId(subjectId)
+    }
 
     Log.d("StudyScreen", "Number of flashcards: ${flashcardList.size}")
-
 
     Scaffold(
         topBar = {
@@ -118,7 +113,6 @@ fun StudyScreen(
         },
         modifier = Modifier.padding(bottom = 16.dp)
     ) { _ ->
-
         if (state.isAddingFlashcard) {
             // Pass subjectId to AddFlashcardDialog
             AddFlashcardDialog(subjectId = subjectId ?: -1, state = state, onEvent = viewModel::onEvent)
@@ -128,14 +122,10 @@ fun StudyScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 100.dp)
-                .navigationBarsPadding(),  // Use this line instead
+                .navigationBarsPadding(),
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Display subject details
-//            Text(
-//                "Subject ID: $subjectId",
-//                fontSize = 20.sp)
             Text(
                 "Subject Name: ${subjectDetails?.subjectName ?: "Unknown"}",
                 fontSize = 20.sp
@@ -147,14 +137,9 @@ fun StudyScreen(
                     .padding(16.dp),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-
                 if (state.flashcards.isNotEmpty()) {
                     val currentFlashcardIndex = state.currentFlashcardIndex
-
                     val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
-//                    Log.d("VoiceNotes", "Audio file for current flashcard: $audioFile")
-
-
 
                     Flashcard(
                         flashcards = flashcardList,
@@ -174,11 +159,11 @@ fun StudyScreen(
                 } else {
                     Text("No flashcards available.")
                 }
-
             }
         }
     }
 }
+
 
 @Composable
 fun Flashcard(

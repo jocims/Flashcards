@@ -67,6 +67,7 @@ fun StudyScreen(
     // Call updateFlashcardState when StudyScreen is created
     LaunchedEffect(Unit) {
         viewModel.updateFlashcardState(subjectId)
+        viewModel.getFlashcardsBySubjectId(subjectId)
     }
 
     val state by viewModel.stateFlashcard.collectAsState()
@@ -143,7 +144,7 @@ fun StudyScreen(
 
                 if (state.flashcards.isNotEmpty()) {
 
-                    val currentFlashcardIndex = state.currentFlashcardIndex % state.flashcards.size
+                    val currentFlashcardIndex = state.currentFlashcardIndex
 
                     Flashcard(
                         flashcards = flashcardList,

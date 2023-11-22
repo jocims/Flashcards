@@ -71,7 +71,10 @@ class SubjectViewModel(
     }
 
     fun updateFlashcardState(newSubjectId: Int) {
-        _stateFlashcard.value = _stateFlashcard.value.copy(subjectId = newSubjectId)
+        _stateFlashcard.value = _stateFlashcard.value.copy(
+            subjectId = newSubjectId,
+            currentFlashcardIndex = 0
+                )
     }
 
     fun onEvent(event: AppEvent) {
@@ -152,7 +155,7 @@ class SubjectViewModel(
                     isAddingFlashcard = false,
                     front = "",
                     back = "",
-                    subjectId = -1
+                    subjectId = event.subjectId
                 ) }
             }
             is AppEvent.SetFlashcardBack -> {
@@ -190,27 +193,23 @@ class SubjectViewModel(
             AppEvent.ShowSubjectDialog -> TODO()
             is AppEvent.SortSubjects -> TODO()
 
+            // Funciona mas esta quebrando os indexes finais
 //            AppEvent.NavigateToNextFlashcard -> {
-//                _stateFlashcard.update {
-//                    it.copy(
-//                        currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
-//                    )
-//                }
+//                _stateFlashcard.update { it.copy(
+//                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % stateFlashcard.value.flashcards.size
+//                ) }
 //            }
 //            AppEvent.NavigateToPreviousFlashcard -> {
 //                _stateFlashcard.update { it.copy(
-//                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + getFlashcardsBySubjectId(subjectId = it.subjectId).size) % getFlashcardsBySubjectId(subjectId = it.subjectId).size
+//                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
 //                ) }
 //            }
 
             AppEvent.NavigateToNextFlashcard -> {
                 val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
-                if (flashcards.isNotEmpty()) {
-                    _stateFlashcard.update { state ->
-                        val currentFlashcardIndex = (state.currentFlashcardIndex + 1) % flashcards.size
-                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
-                    }
-                }
+                _stateFlashcard.update { it.copy(
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % flashcards.size
+                )}
             }
             AppEvent.NavigateToPreviousFlashcard -> {
                 val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
@@ -221,6 +220,27 @@ class SubjectViewModel(
                     }
                 }
             }
+
+            // Funciona mas nao roda quando add novo flashcard
+//            AppEvent.NavigateToNextFlashcard -> {
+//                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
+//                if (flashcards.isNotEmpty()) {
+//                    _stateFlashcard.update { state ->
+//                        val currentFlashcardIndex = (state.currentFlashcardIndex + 1) % flashcards.size
+//                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
+//                    }
+//                }
+//            }
+//            AppEvent.NavigateToPreviousFlashcard -> {
+//                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
+//                if (flashcards.isNotEmpty()) {
+//                    _stateFlashcard.update { state ->
+//                        val currentFlashcardIndex = (state.currentFlashcardIndex - 1 + flashcards.size) % flashcards.size
+//                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
+//                    }
+//                }
+//            }
+
         }
     }
 }

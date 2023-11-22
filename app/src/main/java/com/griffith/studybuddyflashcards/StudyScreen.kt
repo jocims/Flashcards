@@ -149,7 +149,7 @@ fun StudyScreen(
             ) {
 
                 if (state.flashcards.isNotEmpty()) {
-                    val currentFlashcardIndex = state.currentFlashcardIndex % state.flashcards.size
+                    val currentFlashcardIndex = state.currentFlashcardIndex
 
                     val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
 //                    Log.d("VoiceNotes", "Audio file for current flashcard: $audioFile")

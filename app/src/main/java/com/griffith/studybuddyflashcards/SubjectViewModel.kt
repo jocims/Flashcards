@@ -173,7 +173,7 @@ class SubjectViewModel(
                     isAddingFlashcard = false,
                     front = "",
                     back = "",
-                    subjectId = -1,
+                    subjectId = event.subjectId,
                     audioFilePath = null
                 ) }
             }
@@ -209,14 +209,19 @@ class SubjectViewModel(
             }
 
             AppEvent.NavigateToNextFlashcard -> {
+                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
                 _stateFlashcard.update { it.copy(
-                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % stateFlashcard.value.flashcards.size
-                ) }
+                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex + 1) % flashcards.size
+                )}
             }
             AppEvent.NavigateToPreviousFlashcard -> {
-                _stateFlashcard.update { it.copy(
-                    currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
-                ) }
+                val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
+                if (flashcards.isNotEmpty()) {
+                    _stateFlashcard.update { state ->
+                        val currentFlashcardIndex = (state.currentFlashcardIndex - 1 + flashcards.size) % flashcards.size
+                        state.copy(currentFlashcardIndex = currentFlashcardIndex)
+                    }
+                }
             }
 
             is AppEvent.SaveAudioFile -> {

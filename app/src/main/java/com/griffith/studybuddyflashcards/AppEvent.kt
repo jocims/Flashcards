@@ -1,5 +1,7 @@
 package com.griffith.studybuddyflashcards
 
+import java.io.File
+
 sealed interface AppEvent {
 
     object SaveSubject : AppEvent
@@ -21,4 +23,12 @@ sealed interface AppEvent {
     object NavigateToPreviousFlashcard : AppEvent
 
     object NavigateToNextFlashcard : AppEvent
+
+    // New cases for audio recording
+    object StartRecordingAudio : AppEvent
+    object StopRecordingAudio : AppEvent
+    data class SaveAudioFile(val audioFile: File) : AppEvent
+
+    data class PlayAudio(val file: File) : AppEvent
+    object StopAudio : AppEvent
 }

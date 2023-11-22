@@ -14,7 +14,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-
 @Composable
 fun AddFlashcardDialog(
     state: FlashcardState,
@@ -24,7 +23,6 @@ fun AddFlashcardDialog(
 ) {
     // Add log statement to check if the composable is recomposed
     Log.d("AddFlashcardDialog", "Recomposing with state: $state")
-
 
     AlertDialog(
         modifier = modifier,
@@ -63,6 +61,22 @@ fun AddFlashcardDialog(
                         Text(text = "Flashcard Back Text")
                     }
                 )
+
+                // Button for starting/stopping audio recording
+                Button(
+                    onClick = {
+                        if (state.isRecordingAudio) {
+                            // Stop recording
+                            onEvent(AppEvent.StopRecordingAudio)
+                        } else {
+                            // Start recording
+                            onEvent(AppEvent.StartRecordingAudio)
+                        }
+                    }
+                ) {
+                    Text(text = if (state.isRecordingAudio) "Stop" else "Start Recording")
+                }
+
             }
         },
         buttons = {
@@ -77,8 +91,6 @@ fun AddFlashcardDialog(
                         // Save the flashcard
                         onEvent(AppEvent.SaveFlashcard(subjectId = subjectId))
 
-
-
                         // Hide the dialog
                         onEvent(AppEvent.HideFlashcardDialog)
                     }
@@ -89,4 +101,3 @@ fun AddFlashcardDialog(
         }
     )
 }
-

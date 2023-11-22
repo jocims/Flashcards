@@ -1,8 +1,11 @@
 package com.griffith.studybuddyflashcards
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.griffith.studybuddyflashcards.record.AudioRecorder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -12,11 +15,24 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
 
 class SubjectViewModel(
+    application: Application,
     private val daoSubject: SubjectDao,
     private val daoFlashcard: FlashcardDao
-): ViewModel() {
+): AndroidViewModel(application) {
+
+    private val audioRecorder by lazy {
+        AudioRecorder(application)
+    }
+
+    private var audioFile: File? = null
+
+    private val audioPlayer: AudioPlayer by lazy {
+        AudioPlayer(application)
+    }
+
 
     private val _sortType = MutableStateFlow(SortType.DEFAULT)
     private val _subjects = _sortType
@@ -145,7 +161,8 @@ class SubjectViewModel(
                 val flashcard = Flashcard(
                     front = front,
                     back = back,
-                    subjectId = event.subjectId
+                    subjectId = event.subjectId,
+                    audioFilePath = stateFlashcard.value.audioFilePath
                 )
 
                 viewModelScope.launch {
@@ -156,7 +173,8 @@ class SubjectViewModel(
                     isAddingFlashcard = false,
                     front = "",
                     back = "",
-                    subjectId = -1
+                    subjectId = -1,
+                    audioFilePath = null
                 ) }
             }
             is AppEvent.SetFlashcardBack -> {
@@ -203,6 +221,53 @@ class SubjectViewModel(
                 _stateFlashcard.update { it.copy(
                     currentFlashcardIndex = (stateFlashcard.value.currentFlashcardIndex - 1 + stateFlashcard.value.flashcards.size) % stateFlashcard.value.flashcards.size
                 ) }
+            }
+
+            is AppEvent.SaveAudioFile -> {
+                _stateFlashcard.update { it.copy(audioFilePath = event.audioFile.path) }
+            }
+
+
+
+            AppEvent.StartRecordingAudio -> {
+                val timestamp = System.currentTimeMillis()
+                audioFile = File(getApplication<Application>().cacheDir, "audio_$timestamp.mp3")
+                audioRecorder.start(audioFile!!)
+                _stateFlashcard.update { it.copy(isRecordingAudio = true) }
+                Log.d("VoiceNotes", "Started recording audio: ${audioFile?.path}")
+
+            }
+
+            AppEvent.StopRecordingAudio -> {
+                audioRecorder.stop()
+                audioFile?.let { savedAudioFile ->
+                    // Notify ViewModel or UI about the saved audio file
+                    onEvent(AppEvent.SaveAudioFile(savedAudioFile))
+                    // Update the state with the saved audio file
+                    _stateFlashcard.update {
+                        it.copy(
+                            isRecordingAudio = false,
+                            audioFilePath = savedAudioFile.path
+                        )
+                    }
+                    Log.d("VoiceNotes", "Stopped recording audio: ${savedAudioFile.path}")
+                }
+            }
+
+            is AppEvent.PlayAudio -> {
+                if(event.file == null) {
+                    Log.d("VoiceNotes", "File is null")
+                    return
+                }
+                Log.d("VoiceNotes", "Filepath: ${event.file.path}")
+                audioPlayer.playFile(event.file)
+                _stateFlashcard.update { it.copy(isPlayingAudio = true) }
+            }
+
+
+            is AppEvent.StopAudio -> {
+                audioPlayer.stop()
+                _stateFlashcard.update { it.copy(isPlayingAudio = false) }
             }
         }
     }

@@ -3,6 +3,7 @@ package com.griffith.studybuddyflashcards
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import java.io.File
 
 @Entity(
     foreignKeys = [
@@ -19,6 +20,8 @@ data class Flashcard(
     val id: Int = 0,
     val front: String,
     val back: String,
-    val subjectId: Int // Foreign key referencing Subject
+    val subjectId: Int, // Foreign key referencing Subject
+    val audioFilePath: String? = null
 )
+
 

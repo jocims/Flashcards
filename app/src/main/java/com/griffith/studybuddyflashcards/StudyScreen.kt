@@ -1,5 +1,6 @@
 package com.griffith.studybuddyflashcards
 
+import android.media.MediaPlayer
 import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +35,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -53,6 +56,7 @@ import kotlinx.coroutines.launch
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.griffith.studybuddyflashcards.SubjectViewModel
+import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -145,8 +149,12 @@ fun StudyScreen(
             ) {
 
                 if (state.flashcards.isNotEmpty()) {
-
                     val currentFlashcardIndex = state.currentFlashcardIndex % state.flashcards.size
+
+                    val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
+//                    Log.d("VoiceNotes", "Audio file for current flashcard: $audioFile")
+
+
 
                     Flashcard(
                         flashcards = flashcardList,
@@ -155,11 +163,18 @@ fun StudyScreen(
                         state = state,
                         onNavigateToPrevious = { onEvent(AppEvent.NavigateToPreviousFlashcard) },
                         onNavigateToNext = { onEvent(AppEvent.NavigateToNextFlashcard) },
+                        audioFilePath = audioFile,
+                        onPlayAudio = { file ->
+                            val playAudioEvent = AppEvent.PlayAudio(file = file)
+                            viewModel.onEvent(playAudioEvent)
+                        },
+                        onStopAudio = { viewModel.onEvent(AppEvent.StopAudio) },
                         modifier = Modifier.fillMaxWidth().padding(16.dp)
                     )
                 } else {
                     Text("No flashcards available.")
                 }
+
             }
         }
     }
@@ -173,6 +188,9 @@ fun Flashcard(
     state: FlashcardState,
     onNavigateToPrevious: () -> Unit,
     onNavigateToNext: () -> Unit,
+    audioFilePath: String?,
+    onPlayAudio: (File) -> Unit,
+    onStopAudio: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     var isFrontVisible by remember { mutableStateOf(true) }
@@ -206,7 +224,10 @@ fun Flashcard(
                     val flashcard = flashcards.getOrNull(currentFlashcardIndex)
 
                     if (flashcard != null) {
-                        IconButton(onClick = onNavigateToPrevious) {
+                        IconButton(onClick = {
+                            Log.d("Flashcardss", "Navigate to Previous Flashcard clicked")
+                            onNavigateToPrevious()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowBack,
                                 contentDescription = "Navigate to Previous Flashcard"
@@ -222,7 +243,10 @@ fun Flashcard(
                                 .padding(16.dp)
                         )
 
-                        IconButton(onClick = onNavigateToNext) {
+                        IconButton(onClick = {
+                            Log.d("Flashcardss", "Navigate to Next Flashcard clicked")
+                            onNavigateToNext()
+                        }) {
                             Icon(
                                 imageVector = Icons.Default.ArrowForward,
                                 contentDescription = "Navigate to Next Flashcard"
@@ -232,6 +256,23 @@ fun Flashcard(
                         Text("No flashcard found for subjectId $subjectId and index ${state.currentFlashcardIndex}")
                     }
                 }
+
+                // Button for playing/stopping audio
+                Button(
+                    onClick = {
+                        if (state.isPlayingAudio) {
+                            // Stop playing
+                            onStopAudio()
+                        } else {
+                            Log.d("PlayAudio", "Play audio clicked. File path: $audioFilePath")
+                            // Play audio
+                            onPlayAudio(File(audioFilePath ?: ""))
+                        }
+                    }
+                ) {
+                    Text(text = if (state.isPlayingAudio) "Stop Playing" else "Play Audio")
+                }
+
             }
         }
         Text("SubjectId $subjectId and index ${state.currentFlashcardIndex}")

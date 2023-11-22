@@ -207,10 +207,6 @@ class SubjectViewModel(
             is AppEvent.SortFlashcards -> {
                 _sortType.value = event.sortType
             }
-            is AppEvent.DeleteSubject -> TODO()
-            AppEvent.SaveSubject -> TODO()
-            AppEvent.ShowSubjectDialog -> TODO()
-            is AppEvent.SortSubjects -> TODO()
 
             AppEvent.NavigateToNextFlashcard -> {
                 _stateFlashcard.update { it.copy(

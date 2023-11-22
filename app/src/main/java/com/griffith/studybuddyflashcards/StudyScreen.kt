@@ -257,22 +257,34 @@ fun Flashcard(
                     }
                 }
 
-                // Button for playing/stopping audio
-                Button(
-                    onClick = {
-                        if (state.isPlayingAudio) {
-                            // Stop playing
-                            onStopAudio()
-                        } else {
-                            Log.d("PlayAudio", "Play audio clicked. File path: $audioFilePath")
-                            // Play audio
-                            onPlayAudio(File(audioFilePath ?: ""))
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(IntrinsicSize.Max)
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (!isFrontVisible && audioFilePath != null) {
+                        // Button for playing/stopping audio
+                        Button(
+                            onClick = {
+                                if (state.isPlayingAudio) {
+                                    // Stop playing
+                                    onStopAudio()
+                                } else {
+                                    Log.d(
+                                        "PlayAudio",
+                                        "Play audio clicked. File path: $audioFilePath"
+                                    )
+                                    // Play audio
+                                    onPlayAudio(File(audioFilePath ?: ""))
+                                }
+                            },
+                        ) {
+                            Text(text = if (state.isPlayingAudio) "Stop Playing" else "Play Audio")
                         }
                     }
-                ) {
-                    Text(text = if (state.isPlayingAudio) "Stop Playing" else "Play Audio")
                 }
-
             }
         }
         Text("SubjectId $subjectId and index ${state.currentFlashcardIndex}")

@@ -154,9 +154,3 @@ fun showToast(context: Context, message: String) {
 
 
 }
-//
-//fun launchStudyActivity(context: Context, id: Int) {
-//    val intent = Intent(context, StudyActivity::class.java)
-//    intent.putExtra("subjectId", id)
-//    context.startActivity(intent)
-//}

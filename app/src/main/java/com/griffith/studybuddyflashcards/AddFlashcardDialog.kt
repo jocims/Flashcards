@@ -74,7 +74,7 @@ fun AddFlashcardDialog(
                         }
                     }
                 ) {
-                    Text(text = if (state.isRecordingAudio) "Stop" else "Start Recording")
+                    Text(text = if (state.isRecordingAudio) "Stop" else "Record Back Audio")
                 }
 
             }

@@ -53,6 +53,7 @@ fun MainScreen(
     val context = LocalContext.current
 
     // Collect the flashcards directly from the ViewModel
+    // Collect the flashcards directly from the ViewModel
 //    val flashcardsState by viewModel.stateFlashcard.collectAsState()
 //    val flashcards = remember {
 //        flashcardsState.flashcards
@@ -112,11 +113,6 @@ fun MainScreen(
                         .fillMaxWidth()
                         .clickable {
                             showToast(context, "Clicked on ${subject.subjectName}")
-
-//                            val dataMap = mapOf(
-//                                "subjectId" to subject.id,
-//                                "subjectName" to subject.subjectName,
-//                            )
 
                             //Set the currentFlashcardIndex to 0
                             viewModel.updateFlashcardState(subject.id)

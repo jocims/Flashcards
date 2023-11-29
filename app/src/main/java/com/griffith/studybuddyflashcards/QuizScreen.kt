@@ -7,12 +7,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -55,6 +57,7 @@ fun QuizScreen(
     var currentFlashcardIndex by remember { mutableStateOf(0) }
     var correctCount by remember { mutableStateOf(0) }
     var allFlashcards by remember { mutableStateOf<List<Flashcard>>(emptyList()) }
+//    var isFrontVisible by remember { mutableStateOf(true) }
 
     val flashcardShuffled = flashcards.shuffled()
 
@@ -90,7 +93,7 @@ fun QuizScreen(
                     var backFlashcard = Flashcard(0, "", "", 0)
 
                     // Check if the front flashcard exists in flashcardsToMatch
-                    if(frontFlashcard in flashcardsToMatch) {
+                    if (frontFlashcard in flashcardsToMatch) {
                         // Display front flashcard
                         backFlashcard = allFlashcards[(currentFlashcardIndex) % totalFlashcards]
                     } else {
@@ -98,11 +101,80 @@ fun QuizScreen(
                         backFlashcard = allFlashcards[(currentFlashcardIndex + 1) % totalFlashcards]
                     }
 
-//                    val backFlashcard = allFlashcards[(currentFlashcardIndex + 1) % totalFlashcards]
+                    // Front and Back Flashcards Side by Side
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        // Front Flashcard
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Front",
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                            )
 
-                    // Display front and back texts
-                    Text(text = "Front: ${frontFlashcard.front}")
-                    Text(text = "Back: ${backFlashcard.back}")
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp)
+                                    .height(200.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.DarkGray,
+                                    contentColor = Color.White
+                                )
+                            ) {
+                                Text(
+                                    text = frontFlashcard.front,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+
+                        // Back Flashcard
+                        Column(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxWidth(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(
+                                text = "Back",
+                                textAlign = TextAlign.Center,
+                                fontSize = 20.sp,
+                            )
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(5.dp)
+                                    .height(200.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = Color.Gray,
+                                    contentColor = Color.Black
+                                )
+                            ) {
+                                Text(
+                                    text = backFlashcard.back,
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp),
+                                    textAlign = TextAlign.Center,
+                                    fontSize = 20.sp
+                                )
+                            }
+                        }
+                    }
 
                     // Question: Do these match?
                     Text(
@@ -113,38 +185,60 @@ fun QuizScreen(
                         textAlign = TextAlign.Center,
                         fontSize = 20.sp
                     )
-
-                    // Icons for Yes and No
+                    // Yes and No Cards
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
+                        horizontalArrangement = Arrangement.Center
                     ) {
-                        IconButton(onClick = {
-                            // Handle Yes click
-                            if (frontFlashcard.id == backFlashcard.id) {
-                                correctCount++
+                        // Yes Card
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Green,
+                                contentColor = Color.White
+                            ),
+                        ) {
+                            IconButton(onClick = {
+                                // Handle Yes click
+                                if (frontFlashcard.id == backFlashcard.id) {
+                                    correctCount++
+                                }
+                                currentFlashcardIndex += 1 // Move to the next set of flashcards
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Check,
+                                    contentDescription = "Yes",
+                                    modifier = Modifier
+                                        .size(40.dp), // Adjust the size as needed
+                                )
                             }
-                            currentFlashcardIndex += 1 // Move to the next set of flashcards
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Check,
-                                contentDescription = "Yes"
-                            )
                         }
-
-                        IconButton(onClick = {
-                            // Handle No click
-                            if (frontFlashcard.id != backFlashcard.id) {
-                                correctCount++
-                            }
-                            currentFlashcardIndex += 1 // Move to the next set of flashcards
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "No"
+                        // No Card
+                        Card(
+                            modifier = Modifier
+                                .padding(8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color.Red,
+                                contentColor = Color.White
                             )
+                        ) {
+                            IconButton(onClick = {
+                                // Handle No click
+                                if (frontFlashcard.id != backFlashcard.id) {
+                                    correctCount++
+                                }
+                                currentFlashcardIndex += 1 // Move to the next set of flashcards
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "No",
+                                    modifier = Modifier
+                                        .size(40.dp) // Adjust the size as needed
+                                )
+                            }
                         }
                     }
                 } else {

@@ -131,7 +131,7 @@ fun StudyScreen(
             AddFlashcardDialog(subjectId = subjectId ?: -1, state = state, onEvent = viewModel::onEvent)
         }
 
-        Column (
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 100.dp)
@@ -139,99 +139,109 @@ fun StudyScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                "Your Flashcards",
-                fontSize = 25.sp
-            )
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                if (state.flashcards.isNotEmpty()) {
-                    val currentFlashcardIndex = state.currentFlashcardIndex
-                    val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
-
-                    Flashcard(
-                        flashcards = flashcardList,
-                        subjectId = subjectId,
-                        currentFlashcardIndex = currentFlashcardIndex,
-                        state = state,
-                        onNavigateToPrevious = { onEvent(AppEvent.NavigateToPreviousFlashcard) },
-                        onNavigateToNext = { onEvent(AppEvent.NavigateToNextFlashcard) },
-                        audioFilePath = audioFile,
-                        onPlayAudio = { file ->
-                            val playAudioEvent = AppEvent.PlayAudio(file = file)
-                            viewModel.onEvent(playAudioEvent)
-                        },
-                        onStopAudio = { viewModel.onEvent(AppEvent.StopAudio) },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        onEvent = viewModel::onEvent
-                    )
-                } else {
-                    Text("No flashcards available.")
-                }
+            item {
+                Text(
+                    "Your Flashcards",
+                    fontSize = 25.sp
+                )
             }
 
-            Text(
-                text = "Test your knowledge!",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 25.sp
-            )
-
-            Card (
-                modifier = Modifier
-                    .fillMaxWidth(0.6f)
-                    .fillMaxHeight(0.6f)
-                    .height(IntrinsicSize.Max)
-                    .padding(16.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = Color.LightGray,
-                    contentColor = Color.DarkGray
-                ),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-            ){
-                Box(
+            item {
+                Row(
                     modifier = Modifier
-                        .fillMaxSize()
-                        .clickable {
-
-                            showToast(context, "Clicked on Quiz")
-
-                            navController.navigate("quiz_screen/${subjectId}")
-                        },
-                    contentAlignment = Alignment.Center
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Text(
-                        text = "Quiz",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        fontSize = 40.sp,
-                        textAlign = TextAlign.Center
-                    )
+                    if (state.flashcards.isNotEmpty()) {
+                        val currentFlashcardIndex = state.currentFlashcardIndex
+                        val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
+
+                        Flashcard(
+                            flashcards = flashcardList,
+                            subjectId = subjectId,
+                            currentFlashcardIndex = currentFlashcardIndex,
+                            state = state,
+                            onNavigateToPrevious = { onEvent(AppEvent.NavigateToPreviousFlashcard) },
+                            onNavigateToNext = { onEvent(AppEvent.NavigateToNextFlashcard) },
+                            audioFilePath = audioFile,
+                            onPlayAudio = { file ->
+                                val playAudioEvent = AppEvent.PlayAudio(file = file)
+                                viewModel.onEvent(playAudioEvent)
+                            },
+                            onStopAudio = { viewModel.onEvent(AppEvent.StopAudio) },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            onEvent = viewModel::onEvent
+                        )
+                    } else {
+                        Text("No flashcards available.")
+                    }
                 }
             }
 
-            Text(
-                text = "Last score: 100",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                textAlign = TextAlign.Center,
-                fontSize = 25.sp
-            )
+            item {
+                Text(
+                    text = "Test your knowledge!",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 25.sp
+                )
+            }
 
+            item {
+                Card(
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .fillMaxHeight(0.6f)
+                        .height(IntrinsicSize.Max)
+                        .padding(16.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = Color.LightGray,
+                        contentColor = Color.DarkGray
+                    ),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {
+
+                                showToast(context, "Clicked on Quiz")
+
+                                navController.navigate("quiz_screen/${subjectId}")
+                            },
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = "Quiz",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            fontSize = 40.sp,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                }
+            }
+
+            item {
+                Text(
+                    text = "Last score: 100",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    textAlign = TextAlign.Center,
+                    fontSize = 25.sp
+                )
+            }
         }
     }
 }
+
 
 
 @Composable
@@ -246,7 +256,7 @@ fun Flashcard(
     onPlayAudio: (File) -> Unit,
     onStopAudio: () -> Unit,
     modifier: Modifier = Modifier,
-    onEvent: (AppEvent) -> kotlin.Unit
+    onEvent: (AppEvent) -> Unit
 ) {
     var isFrontVisible by remember { mutableStateOf(true) }
 
@@ -255,7 +265,7 @@ fun Flashcard(
         Card(
             modifier = modifier
                 .fillMaxWidth()
-                .height(IntrinsicSize.Max)
+                .height(250.dp)
                 .padding(16.dp),
             colors = CardDefaults.cardColors(
                 containerColor = if (isFrontVisible) Color.DarkGray else Color.Gray,
@@ -267,7 +277,7 @@ fun Flashcard(
                 modifier = Modifier
                     .fillMaxSize()
                     .clickable { isFrontVisible = !isFrontVisible },
-                verticalArrangement = Arrangement.Center
+                verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Row(
                     modifier = Modifier
@@ -337,20 +347,24 @@ fun Flashcard(
                     }
 
                     if (isFrontVisible) {
-                        Row {
-                            IconButton(onClick = {
-                                onEvent(AppEvent.DeleteFlashcard(state.flashcards[currentFlashcardIndex]))
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete flashcard"
-                                )
-                            }
-                        }
+
                     }
                 }
             }
         }
-//        Text("SubjectId $subjectId and index ${state.currentFlashcardIndex}")
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
+            IconButton(onClick = {
+                onEvent(AppEvent.DeleteFlashcard(state.flashcards[currentFlashcardIndex]))
+            }) {
+                Icon(
+                    imageVector = Icons.Default.Delete,
+                    contentDescription = "Delete flashcard"
+                )
+            }
+        }
     }
 }

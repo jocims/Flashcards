@@ -183,15 +183,34 @@ class SubjectViewModel(
                 ) }
             }
             is AppEvent.SetFlashcardBack -> {
+                // Limit lines and characters
+                val limitedText = event.back
+                    .lineSequence()
+                    .take(6) // Limit to a maximum of 6 lines
+                    .joinToString("\n") { line ->
+                        if (line.length > 12) line.take(12) else line
+                    }
+                    .take(100) // Limit to a maximum of 100 characters
+
                 _stateFlashcard.update { it.copy(
-                    back = event.back
+                    back = limitedText
                 ) }
             }
             is AppEvent.SetFlashcardFront -> {
+                // Limit lines and characters
+                val limitedText = event.front
+                    .lineSequence()
+                    .take(6) // Limit to a maximum of 6 lines
+                    .joinToString("\n") { line ->
+                        if (line.length > 12) line.take(12) else line
+                    }
+                    .take(100) // Limit to a maximum of 100 characters
+
                 _stateFlashcard.update { it.copy(
-                    front = event.front
+                    front = limitedText
                 ) }
             }
+
             AppEvent.ShowFlashcardList -> {
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false

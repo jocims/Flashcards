@@ -139,12 +139,14 @@ fun StudyScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             item {
                 Text(
                     "Your Flashcards",
                     fontSize = 25.sp
                 )
             }
+
 
             item {
                 Row(
@@ -156,7 +158,6 @@ fun StudyScreen(
                     if (state.flashcards.isNotEmpty()) {
                         val currentFlashcardIndex = state.currentFlashcardIndex
                         val audioFile = flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
-
                         Flashcard(
                             flashcards = flashcardList,
                             subjectId = subjectId,
@@ -257,6 +258,7 @@ fun Flashcard(
     onStopAudio: () -> Unit,
     modifier: Modifier = Modifier,
     onEvent: (AppEvent) -> Unit
+
 ) {
     var isFrontVisible by remember { mutableStateOf(true) }
 
@@ -344,10 +346,6 @@ fun Flashcard(
                                     contentDescription = if(state.isPlayingAudio) "Stop Audio" else "Play Audio"
                                 )
                             }
-                    }
-
-                    if (isFrontVisible) {
-
                     }
                 }
             }

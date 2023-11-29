@@ -57,7 +57,6 @@ fun QuizScreen(
     var currentFlashcardIndex by remember { mutableStateOf(0) }
     var correctCount by remember { mutableStateOf(0) }
     var allFlashcards by remember { mutableStateOf<List<Flashcard>>(emptyList()) }
-//    var isFrontVisible by remember { mutableStateOf(true) }
 
     val flashcardShuffled = flashcards.shuffled()
 

@@ -77,10 +77,22 @@ class MainActivity : ComponentActivity() {
                                 navController = navController,
                                 onEvent = viewModel::onEvent
                             )
-                        } else {
-                            // Handle invalid subjectId
                         }
                     }
+
+                    composable("quiz_screen/{subjectId}") { backStackEntry ->
+                        // Retrieve subjectId from the route
+                        val subjectId = backStackEntry.arguments?.getString("subjectId")?.toIntOrNull()
+                        if (subjectId != null) {
+                            QuizScreen(
+                                subjectId = subjectId,
+                                viewModel = viewModel,
+                                navController = navController,
+                                onEvent = viewModel::onEvent
+                            )
+                        }
+                    }
+
 
                 }
             }

@@ -31,4 +31,5 @@ sealed interface AppEvent {
 
     data class PlayAudio(val file: File) : AppEvent
     object StopAudio : AppEvent
+
 }

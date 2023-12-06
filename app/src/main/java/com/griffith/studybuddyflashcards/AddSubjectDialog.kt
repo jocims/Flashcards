@@ -44,15 +44,6 @@ fun AddSubjectDialog(
                         Text(text = "Subject name")
                     }
                 )
-//                TextField(
-//                    value = state.notes,
-//                    onValueChange = {
-//                        onEvent(AppEvent.SetNotes(it))
-//                    },
-//                    placeholder = {
-//                        androidx.compose.material.Text(text = "Notes")
-//                    }
-//                )
             }
         },
         buttons = {

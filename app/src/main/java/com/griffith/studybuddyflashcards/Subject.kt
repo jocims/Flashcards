@@ -9,6 +9,5 @@ data class Subject(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
     val subjectName: String,
-//    val notes: String
 )
 

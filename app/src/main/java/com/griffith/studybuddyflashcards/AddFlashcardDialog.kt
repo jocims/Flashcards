@@ -88,6 +88,11 @@ fun AddFlashcardDialog(
                     onClick = {
                         Log.d("AddFlashcardDialog", "Button clicked")
 
+                        if (state.isRecordingAudio) {
+                            // Stop recording
+                            onEvent(AppEvent.StopRecordingAudio)
+                        }
+
                         // Save the flashcard
                         onEvent(AppEvent.SaveFlashcard(subjectId = subjectId))
 

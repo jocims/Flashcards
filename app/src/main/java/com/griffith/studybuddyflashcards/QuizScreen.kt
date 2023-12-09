@@ -169,8 +169,8 @@ fun QuizScreen(
                                         .padding(5.dp)
                                         .height(200.dp),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color.DarkGray,
-                                        contentColor = Color.White
+                                        containerColor = Color(android.graphics.Color.parseColor("#FCEFCA")),
+                                        contentColor = Color.Black,
                                     )
                                 ) {
                                     Text(
@@ -202,7 +202,7 @@ fun QuizScreen(
                                         .padding(5.dp)
                                         .height(200.dp),
                                     colors = CardDefaults.cardColors(
-                                        containerColor = Color.Gray,
+                                        containerColor = Color(android.graphics.Color.parseColor("#FBDFE4")),
                                         contentColor = Color.Black
                                     )
                                 ) {
@@ -239,7 +239,7 @@ fun QuizScreen(
                                 modifier = Modifier
                                     .padding(8.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color.Green,
+                                    containerColor = Color(android.graphics.Color.parseColor("#52BF48")),
                                     contentColor = Color.White
                                 ),
                             ) {
@@ -263,7 +263,7 @@ fun QuizScreen(
                                 modifier = Modifier
                                     .padding(8.dp),
                                 colors = CardDefaults.cardColors(
-                                    containerColor = Color.Red,
+                                    containerColor = Color(android.graphics.Color.parseColor("#EF2E2B")),
                                     contentColor = Color.White
                                 )
                             ) {

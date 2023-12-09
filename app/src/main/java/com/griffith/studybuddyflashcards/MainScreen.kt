@@ -2,6 +2,7 @@ package com.griffith.studybuddyflashcards
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.fonts.FontFamily
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -63,7 +64,6 @@ fun MainScreen(
     viewModel: SubjectViewModel,
     navController: NavController  // Add this parameter
 ) {
-
     val context = LocalContext.current
 
     Scaffold (
@@ -71,9 +71,8 @@ fun MainScreen(
             TopAppBar(
                 title = { },
                 actions = {
-
                     Image(
-                        painter = painterResource(id = R.drawable.header),  // Replace with your image resource
+                        painter = painterResource(id = R.drawable.header),
                         contentDescription = "Header Image",
                         modifier = Modifier
                             .fillMaxSize()
@@ -95,25 +94,20 @@ fun MainScreen(
         modifier = Modifier.padding(bottom = 16.dp)
     ) { _ ->
 
-        // Use a Box to layer the content and the background image
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(Color.White), // Set a default background color
-
-            // Content of the Box
+                .background(Color.White),
             contentAlignment = Alignment.Center,
         ) {
-            // Background Image
             Image(
-                painter = painterResource(id = R.drawable.background2), // Replace with your image resource
+                painter = painterResource(id = R.drawable.background2),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
                     .fillMaxWidth()
                     .statusBarsPadding()
             )
-
 
             if (state.isAddingSubject) {
                 AddSubjectDialog(state = state, onEvent = onEvent)
@@ -124,7 +118,7 @@ fun MainScreen(
                     .fillMaxSize()
                     .padding(top = 80.dp)
                     .navigationBarsPadding(),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp), // Adjust the spacing as needed
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 item {
@@ -132,7 +126,7 @@ fun MainScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .horizontalScroll(rememberScrollState())
-                            .padding(16.dp), // Adjust padding as needed
+                            .padding(top = 16.dp, bottom = 8.dp), // Adjust padding as needed
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center // Center the content horizontally
                     ) {
@@ -155,45 +149,64 @@ fun MainScreen(
 
                                 Text(
                                     text = sortType.name,
-                                    modifier = Modifier.padding(end = 50.dp) // Adjust padding as needed
+                                    fontSize = 20.sp,
+                                    modifier = Modifier.padding(end = 50.dp),
                                 )
-
                             }
                         }
                     }
-
                 }
-                items(state.subjects) { subject ->
+
+                items(state.subjects.chunked(2)) { subjectsRow ->
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable {
-                                showToast(context, "Clicked on ${subject.subjectName}")
+                            .padding(start = 30.dp, end = 30.dp), // Adjust padding as needed
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        subjectsRow.forEach { subject ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .aspectRatio(1f)
+                                    .clickable {
+                                        showToast(context, "Clicked on ${subject.subjectName}")
 
-                                //Set the currentFlashcardIndex to 0
-                                viewModel.updateFlashcardState(subject.id)
+                                        //Set the currentFlashcardIndex to 0
+                                        viewModel.updateFlashcardState(subject.id)
 
-                                // Navigate to StudyScreen
-                                navController.navigate("study_screen/${subject.id}")
-                            },
+                                        // Navigate to StudyScreen
+                                        navController.navigate("study_screen/${subject.id}")
+                                    }
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .background(Color.Transparent)
+                                ) {
+                                    Image(
+                                        painter = painterResource(id = R.drawable.subject),
+                                        contentDescription = null,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                }
 
-                        ) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            Text(
-                                text = subject.subjectName,
-                                fontSize = 20.sp
-                            )
-                        }
-                        IconButton(onClick = {
-                            onEvent(AppEvent.DeleteSubject(subject))
-                        }) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = "Delete subject"
-                            )
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                    verticalArrangement = Arrangement.Center,
+                                    horizontalAlignment = Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = subject.subjectName,
+                                        fontSize = 30.sp,
+                                        style = MaterialTheme.typography.body2,
+                                        color = Color.DarkGray
+                                    )
+                                }
+                            }
                         }
                     }
                 }

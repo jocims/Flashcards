@@ -3,14 +3,12 @@ package com.griffith.studybuddyflashcards
 import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.griffith.studybuddyflashcards.record.AudioRecorder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -125,7 +123,6 @@ class SubjectViewModel(
 
                 val subject = Subject(
                     subjectName = subjectName
-//                    notes = notes
                 )
                 viewModelScope.launch {
                     daoSubject.upsertSubject(subject)
@@ -133,7 +130,6 @@ class SubjectViewModel(
                 _stateSubject.update { it.copy(
                     isAddingSubject = false,
                     subjectName = ""
-//                    notes = ""
                 ) }
             }
             is AppEvent.SetSubjectName -> {

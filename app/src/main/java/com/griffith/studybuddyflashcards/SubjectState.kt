@@ -7,5 +7,5 @@ data class SubjectState(
     val isAddingSubject: Boolean = false,
 //    val isEditingSubject: Boolean = false,
 //    val isDeletingSubject: Boolean = false,
-    val sortType: SortType = SortType.NAME
+    val sortType: SortType = SortType.NAME,
 )

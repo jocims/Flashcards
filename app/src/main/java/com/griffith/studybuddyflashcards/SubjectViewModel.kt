@@ -4,7 +4,6 @@ import android.app.Application
 import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.griffith.studybuddyflashcards.record.AudioRecorder
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,28 +20,35 @@ class SubjectViewModel(
     private val daoFlashcard: FlashcardDao
 ): AndroidViewModel(application) {
 
+    // Lazy initialization for AudioRecorder instance
     private val audioRecorder by lazy {
         AudioRecorder(application)
     }
 
+    // Audio file used for recording
     private var audioFile: File? = null
 
+    // Lazy initialization for AudioPlayer instance
     private val audioPlayer: AudioPlayer by lazy {
         AudioPlayer(application)
     }
 
-
+    // MutableStateFlow to represent the sort type for subjects
     private val _sortType = MutableStateFlow(SortType.DEFAULT)
+
+    // StateFlow representing a list of subjects, observed based on the sort type
     private val _subjects = _sortType
         .flatMapLatest { sortType ->
             when(sortType) {
                 SortType.NAME -> daoSubject.getSubjectsOrderedBySubjectName()
-//                SortType.NOTES -> daoSubject.getSubjectsOrderedByNotes()
                 SortType.DEFAULT -> daoSubject.getAllSubjects()
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
+    // MutableStateFlow to represent the state of the subject
     private val _stateSubject = MutableStateFlow(SubjectState())
+
+    // StateFlow combining the subject state, sort type, and subjects
     val stateSubject = combine(_stateSubject, _sortType, _subjects) { stateSubject, sortType, subjects ->
         stateSubject.copy(
             subjects = subjects,
@@ -50,6 +56,7 @@ class SubjectViewModel(
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), SubjectState())
 
+    // StateFlow representing a list of flashcards, observed based on the sort type
     private val _flashcards = _sortType
         .flatMapLatest { sortType ->
             when(sortType) {
@@ -58,18 +65,20 @@ class SubjectViewModel(
             }
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(), emptyList())
 
-
+    // MutableStateFlow to represent the state of the flashcard
     private val _stateFlashcard = MutableStateFlow(FlashcardState())
-    val stateFlashcard: StateFlow<FlashcardState> = combine(_stateFlashcard, _sortType, _flashcards) { stateFlashcard, sortType,  flashcards ->
+
+    // StateFlow combining the flashcard state, sort type, and flashcards
+    val stateFlashcard: StateFlow<FlashcardState> = combine(_stateFlashcard, _sortType, _flashcards) { stateFlashcard, sortType, flashcards ->
         stateFlashcard.copy(
             flashcards = flashcards,
             sortType = sortType
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), FlashcardState())
 
+    // Function to get flashcards associated with a specific subject
     fun getFlashcardsBySubjectId(subjectId: Int): List<Flashcard> {
         // Retrieve flashcards by subjectId from your data source
-//        Log.d("SubjectViewModel", "Fetching flashcards for subjectId: $subjectId")
 
         // If the subjectId is -1 or not found, return an empty list
         if (subjectId == -1) {
@@ -79,26 +88,24 @@ class SubjectViewModel(
         return stateFlashcard.value.flashcards.filter { it.subjectId == subjectId }
     }
 
+    // Function to get details of a subject by its ID
     fun getSubjectDetails(subjectId: Int): Subject? {
         // You may need to modify the logic based on your database structure
         return stateSubject.value.subjects.find { it.id == subjectId }
     }
 
+    // Function to update the state of the flashcard with a new subject ID
     fun updateFlashcardState(newSubjectId: Int) {
-
-        _stateFlashcard.value = _stateFlashcard.value.copy(
-            subjectId = newSubjectId,
-            currentFlashcardIndex = 0
-        )
-        Log.d("updateFlashcardState", "Updating flashcard index: $newSubjectId with index: ${stateFlashcard.value.currentFlashcardIndex}")
         _stateFlashcard.value = _stateFlashcard.value.copy(
             subjectId = newSubjectId,
             currentFlashcardIndex = 0
         )
     }
 
+    // Function to handle various application events
     fun onEvent(event: AppEvent) {
         when (event) {
+            // Handling events related to subjects
             is AppEvent.DeleteSubject -> {
                 viewModelScope.launch {
                     daoSubject.deleteSubject(event.subject)
@@ -111,13 +118,8 @@ class SubjectViewModel(
             }
             AppEvent.SaveSubject -> {
                 val subjectName = stateSubject.value.subjectName
-//                val notes = stateSubject.value.notes
 
-//                if(subjectName.isBlank() || notes.isBlank()) {
-//                    return
-//                }
-
-                if(subjectName.isBlank()){
+                if(subjectName.isBlank()) {
                     return
                 }
 
@@ -146,6 +148,7 @@ class SubjectViewModel(
                 _sortType.value = event.sortType
             }
 
+            // Handling events related to flashcards
             is AppEvent.DeleteFlashcard -> {
                 viewModelScope.launch {
                     daoFlashcard.deleteFlashcard(event.flashcard)
@@ -213,7 +216,6 @@ class SubjectViewModel(
                 ) }
             }
             AppEvent.HideFlashcardDialog -> {
-//                Log.d("ViewModel", "HideFlashcardDialog event received")
                 _stateFlashcard.update { it.copy(
                     isAddingFlashcard = false
                 ) }
@@ -228,6 +230,7 @@ class SubjectViewModel(
                 _sortType.value = event.sortType
             }
 
+            // Navigation events between flashcards
             AppEvent.NavigateToNextFlashcard -> {
                 val flashcards = getFlashcardsBySubjectId(stateFlashcard.value.subjectId)
                 _stateFlashcard.update { it.copy(
@@ -242,24 +245,19 @@ class SubjectViewModel(
                         state.copy(currentFlashcardIndex = currentFlashcardIndex)
                     }
                 }
-
             }
 
+            // Handling events related to audio recording and playback
             is AppEvent.SaveAudioFile -> {
                 _stateFlashcard.update { it.copy(audioFilePath = event.audioFile.path) }
             }
-
-
-
             AppEvent.StartRecordingAudio -> {
                 val timestamp = System.currentTimeMillis()
                 audioFile = File(getApplication<Application>().cacheDir, "audio_$timestamp.mp3")
                 audioRecorder.start(audioFile!!)
                 _stateFlashcard.update { it.copy(isRecordingAudio = true) }
                 Log.d("VoiceNotes", "Started recording audio: ${audioFile?.path}")
-
             }
-
             AppEvent.StopRecordingAudio -> {
                 audioRecorder.stop()
                 audioFile?.let { savedAudioFile ->
@@ -275,7 +273,6 @@ class SubjectViewModel(
                     Log.d("VoiceNotes", "Stopped recording audio: ${savedAudioFile.path}")
                 }
             }
-
             is AppEvent.PlayAudio -> {
                 if(event.file == null) {
                     Log.d("VoiceNotes", "File is null")
@@ -285,9 +282,7 @@ class SubjectViewModel(
                 audioPlayer.playFile(event.file)
                 _stateFlashcard.update { it.copy(isPlayingAudio = true) }
             }
-
-
-            is AppEvent.StopAudio -> {
+            AppEvent.StopAudio -> {
                 audioPlayer.stop()
                 _stateFlashcard.update { it.copy(isPlayingAudio = false) }
             }

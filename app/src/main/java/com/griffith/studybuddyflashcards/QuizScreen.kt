@@ -1,17 +1,12 @@
 package com.griffith.studybuddyflashcards
 
-import android.annotation.SuppressLint
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -19,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -33,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,7 +34,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -56,30 +48,31 @@ fun QuizScreen(
     navController: NavController,
     onEvent: (AppEvent) -> Unit
 ) {
+    // Fetch flashcards for the given subject
     val flashcards = viewModel.getFlashcardsBySubjectId(subjectId)
     val totalFlashcards = flashcards.size
 
+    // MutableState variables to track the current state of the quiz
     var currentFlashcardIndex by remember { mutableStateOf(0) }
     var correctCount by remember { mutableStateOf(0) }
     var allFlashcards by remember { mutableStateOf<List<Flashcard>>(emptyList()) }
 
+    // Shuffle the flashcards and separate into matching and random sets
     val flashcardShuffled = flashcards.shuffled()
-
-    // Separate flashcards into those to match and those to be random
     val flashcardsToMatch = flashcardShuffled.take(totalFlashcards / 2).shuffled()
     val flashcardsRandom = flashcardShuffled.drop(totalFlashcards / 2).shuffled()
 
     allFlashcards = (flashcardsToMatch + flashcardsRandom).shuffled()
 
+    // Scaffold provides a basic layout structure for the screen
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { },
+                title = { /* Title placeholder */ },
                 actions = {
-
                     Spacer(modifier = Modifier.weight(1f))
 
-                    // IconButton for navigating back to the main screen
+                    // Close button to navigate back to the main screen
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
@@ -89,12 +82,11 @@ fun QuizScreen(
                         )
                     }
 
-                    // Your custom content for the app bar
+                    // Custom content for the app bar (Header Image)
                     Image(
-                        painter = painterResource(id = R.drawable.header),  // Replace with your image resource
+                        painter = painterResource(id = R.drawable.header),
                         contentDescription = "Header Image",
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
                     )
                 },
             )
@@ -112,7 +104,7 @@ fun QuizScreen(
             ) {
                 // Background Image
                 Image(
-                    painter = painterResource(id = R.drawable.background2), // Replace with your image resource
+                    painter = painterResource(id = R.drawable.background2),
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxSize()
@@ -120,6 +112,7 @@ fun QuizScreen(
                         .statusBarsPadding()
                 )
 
+                // Main Column for the quiz content
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
@@ -130,6 +123,7 @@ fun QuizScreen(
                 ) {
                     if (currentFlashcardIndex < totalFlashcards) {
 
+                        // Get the front and back flashcards for the current index
                         val frontFlashcard = allFlashcards[currentFlashcardIndex]
                         var backFlashcard = Flashcard(0, "", "", 0)
 
@@ -163,6 +157,7 @@ fun QuizScreen(
                                     fontSize = 20.sp,
                                 )
 
+                                // Card displaying the front flashcard
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -196,6 +191,7 @@ fun QuizScreen(
                                     textAlign = TextAlign.Center,
                                     fontSize = 20.sp,
                                 )
+                                // Card displaying the back flashcard
                                 Card(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -227,6 +223,7 @@ fun QuizScreen(
                             textAlign = TextAlign.Center,
                             fontSize = 20.sp
                         )
+
                         // Yes and No Cards
                         Row(
                             modifier = Modifier
@@ -258,6 +255,7 @@ fun QuizScreen(
                                     )
                                 }
                             }
+
                             // No Card
                             Card(
                                 modifier = Modifier

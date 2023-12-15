@@ -1,48 +1,44 @@
 package com.griffith.studybuddyflashcards
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.*
 import androidx.compose.material3.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+
+// Composable function for the "Add Flashcard" dialog
 @Composable
 fun AddFlashcardDialog(
-    state: FlashcardState,
-    onEvent: (AppEvent) -> Unit,
-    subjectId: Int,
-    modifier: Modifier = Modifier
+    state: FlashcardState,  // Represents the state of the flashcard being added
+    onEvent: (AppEvent) -> Unit,  // Function to handle events triggered within the dialog
+    subjectId: Int,  // Identifier for the subject the flashcard belongs to
+    modifier: Modifier = Modifier  // Additional modifiers for customization
 ) {
-    // Add log statement to check if the composable is recomposed
-    Log.d("AddFlashcardDialog", "Recomposing with state: $state")
 
+    // AlertDialog component that represents the "Add Flashcard" dialog
     AlertDialog(
         modifier = modifier,
         onDismissRequest = {
-            onEvent(AppEvent.HideFlashcardDialog)
+            onEvent(AppEvent.HideFlashcardDialog)  // Handle dismiss event by hiding the dialog
         },
-        title = { Text(text = "Add Flashcard") },
+        title = { Text(text = "Add Flashcard") },  // Dialog title
+
+        // Dialog content, including text fields for front and back of the flashcard
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Add log statements to check the values
-                Log.d("AddFlashcardDialog", "Recomposing with state: $state")
-                Log.d("AddFlashcardDialog", "SubjectId: $subjectId")
-
+                // Text field for the front of the flashcard
                 TextField(
                     value = state.front,
                     onValueChange = {
-                        // Add log statement to check the changes in the front text
-                        Log.d("AddFlashcardDialog", "Front Text: $it")
                         onEvent(AppEvent.SetFlashcardFront(it))
                     },
                     placeholder = {
@@ -50,11 +46,10 @@ fun AddFlashcardDialog(
                     }
                 )
 
+                // Text field for the back of the flashcard
                 TextField(
                     value = state.back,
                     onValueChange = {
-                        // Add log statement to check the changes in the back text
-                        Log.d("AddFlashcardDialog", "Back Text: $it")
                         onEvent(AppEvent.SetFlashcardBack(it))
                     },
                     placeholder = {
@@ -66,30 +61,31 @@ fun AddFlashcardDialog(
                 Button(
                     onClick = {
                         if (state.isRecordingAudio) {
-                            // Stop recording
+                            // Stop recording audio
                             onEvent(AppEvent.StopRecordingAudio)
                         } else {
-                            // Start recording
+                            // Start recording audio
                             onEvent(AppEvent.StartRecordingAudio)
                         }
                     }
                 ) {
                     Text(text = if (state.isRecordingAudio) "Stop" else "Record Back Audio")
                 }
-
             }
         },
+
+        // Dialog buttons, including a button to add the flashcard
         buttons = {
             Box(
                 modifier = Modifier.fillMaxWidth(),
                 contentAlignment = Alignment.CenterEnd
             ) {
+                // Button to add the flashcard
                 Button(
                     onClick = {
-                        Log.d("AddFlashcardDialog", "Button clicked")
 
                         if (state.isRecordingAudio) {
-                            // Stop recording
+                            // Stop recording audio if it is in progress
                             onEvent(AppEvent.StopRecordingAudio)
                         }
 

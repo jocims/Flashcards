@@ -1,7 +1,6 @@
 // StudyScreen.kt
 package com.griffith.studybuddyflashcards
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -19,7 +18,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -27,10 +25,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -51,12 +46,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import java.io.File
@@ -86,18 +79,14 @@ fun StudyScreen(
         viewModel.getFlashcardsBySubjectId(subjectId)
     }
 
-    Log.d("StudyScreen", "Number of flashcards: ${flashcardList.size}")
-
     Scaffold(
-
         topBar = {
+            // Top app bar with navigation and custom content
             TopAppBar(
                 title = { },
                 actions = {
-
+                    // Spacer and back button in app bar
                     Spacer(modifier = Modifier.weight(1f))
-
-                    // IconButton for navigating back to the main screen
                     IconButton(onClick = {
                         navController.popBackStack()
                     }) {
@@ -106,18 +95,17 @@ fun StudyScreen(
                             contentDescription = "Close Study Screen"
                         )
                     }
-
-                    // Your custom content for the app bar
+                    // Custom content (image) in app bar
                     Image(
-                        painter = painterResource(id = R.drawable.header),  // Replace with your image resource
+                        painter = painterResource(id = R.drawable.header),
                         contentDescription = "Header Image",
-                        modifier = Modifier
-                            .fillMaxSize()
+                        modifier = Modifier.fillMaxSize()
                     )
                 },
             )
         },
         floatingActionButton = {
+            // Floating action button to add flashcards
             FloatingActionButton(onClick = {
                 onEvent(AppEvent.ShowFlashcardDialog)
             }) {
@@ -127,23 +115,19 @@ fun StudyScreen(
                 )
             }
         },
-
         modifier = Modifier.background(Color.Transparent),
-
-        ) { _ ->
-
+    ) { _ ->
         // Use a Box to layer the content and the background image
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.White), // Set a default background color
-
             // Content of the Box
             contentAlignment = Alignment.Center,
         ) {
             // Background Image
             Image(
-                painter = painterResource(id = R.drawable.background2), // Replace with your image resource
+                painter = painterResource(id = R.drawable.background2),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxSize()
@@ -152,7 +136,7 @@ fun StudyScreen(
             )
 
             if (state.isAddingFlashcard) {
-                // Pass subjectId to AddFlashcardDialog
+                // Show AddFlashcardDialog if adding a flashcard
                 AddFlashcardDialog(
                     subjectId = subjectId ?: -1,
                     state = state,
@@ -168,7 +152,7 @@ fun StudyScreen(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
+                // Display subject name and flashcards
                 item {
                     if (subjectDetails != null) {
                         Text(
@@ -178,7 +162,7 @@ fun StudyScreen(
                         )
                     }
                 }
-
+                // Display flashcards or a message if none found
                 item {
                     Row(
                         modifier = Modifier
@@ -187,6 +171,7 @@ fun StudyScreen(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         if (state.flashcards.isNotEmpty()) {
+                            // Display flashcards
                             val currentFlashcardIndex = state.currentFlashcardIndex
                             val audioFile =
                                 flashcardList.getOrNull(currentFlashcardIndex)?.audioFilePath
@@ -208,6 +193,7 @@ fun StudyScreen(
                                 onEvent = viewModel::onEvent
                             )
                         } else {
+                            // Display message if no flashcards found
                             Text(
                                 text = "No flashcards found for this Subject. Click on the '+' sign and create one now!",
                                 textAlign = TextAlign.Center
@@ -215,6 +201,7 @@ fun StudyScreen(
                         }
                     }
                 }
+                // Display quiz button
                 item {
                     Box(
                         modifier = Modifier
@@ -228,7 +215,7 @@ fun StudyScreen(
                                 }
                                 navController.navigate("quiz_screen/${subjectId}")
                             },
-                        contentAlignment = Alignment.Center // Center the content within the Box
+                        contentAlignment = Alignment.Center
                     ) {
                         Image(
                             painter = painterResource(id = R.drawable.subject),
@@ -244,7 +231,7 @@ fun StudyScreen(
                                 .padding(16.dp),
                             fontSize = 40.sp,
                             textAlign = TextAlign.Center,
-                            color = Color.DarkGray // Set text color to white
+                            color = Color.DarkGray
                         )
                     }
                 }
@@ -252,6 +239,7 @@ fun StudyScreen(
         }
     }
 }
+
 
 @Composable
 fun Flashcard(
@@ -266,6 +254,7 @@ fun Flashcard(
     modifier: Modifier = Modifier,
     onEvent: (AppEvent) -> Unit
 ) {
+    // State to determine if the front or back of the flashcard is visible
     var isFrontVisible by remember { mutableStateOf(true) }
 
     // Use LaunchedEffect to automatically stop audio when currentFlashcardIndex changes
@@ -273,6 +262,7 @@ fun Flashcard(
         onStopAudio()
     }
 
+    // Column composable to organize UI elements vertically
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -280,12 +270,14 @@ fun Flashcard(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
+        // Box composable containing the flashcard content
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .clickable { isFrontVisible = !isFrontVisible },
             contentAlignment = Alignment.Center
         ) {
+            // Image displaying the front or back of the flashcard based on isFrontVisible
             Image(
                 painter = painterResource(id = if (isFrontVisible) R.drawable.front else R.drawable.back),
                 contentDescription = null,
@@ -325,6 +317,7 @@ fun Flashcard(
                 )
             }
 
+            // Text displaying the front or back content of the flashcard
             Text(
                 text = if (isFrontVisible) flashcards.getOrNull(currentFlashcardIndex)?.front.orEmpty() else flashcards.getOrNull(currentFlashcardIndex)?.back.orEmpty(),
                 fontSize = 20.sp,
@@ -334,14 +327,15 @@ fun Flashcard(
                 color = Color.DarkGray
             )
 
+            // Box at the bottom for audio playback controls
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 120.dp),
                 contentAlignment = Alignment.BottomCenter
             ) {
+                // Display audio controls when the back of the flashcard is visible and audioFilePath is not null
                 if (!isFrontVisible && audioFilePath != null) {
-
                     // Button for playing/stopping audio
                     IconButton(onClick = {
                         if (state.isPlayingAudio) onStopAudio() else onPlayAudio(File(audioFilePath ?: ""))
@@ -356,4 +350,3 @@ fun Flashcard(
         }
     }
 }
-
